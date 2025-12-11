@@ -1,6 +1,15 @@
 using backend.Repositories;
+using DotNetEnv;
+
+DotNetEnv.Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
+
+var connetionString = Environment.GetEnvironmentVariable("ConnectionStrings__MongoDB");
+if (string.IsNullOrEmpty(connetionString))
+{
+    throw new Exception("Connection string not found. Ensure the .env file is correctly configured and placed in the root directory.");
+}
 
 builder.Services.AddControllers();
 
