@@ -1,0 +1,24 @@
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-preview-alpine AS base
+USER $APP_UID
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0-preview-alpine AS build
+WORKDIR /source
+
+COPY backend.csproj ./
+# COPY test/Tests/Tests.csproj test/Tests/
+# COPY VictorFrye.HelloDotnet.slnx ./
+RUN dotnet restore ./backend.csproj
+
+COPY . .
+RUN dotnet build -c Release --no-restore 
+
+FROM build AS test
+RUN dotnet test -c Release --no-build
+
+FROM test AS publish
+RUN dotnet publish ./backend.csproj -c Release --no-build -o /out
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /out .
+ENTRYPOINT ["dotnet", "backend.dll"]

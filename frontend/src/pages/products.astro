@@ -16,9 +16,7 @@ const response = await api.api.productsList();
   <main style="padding: 2rem; max-width: 900px; margin: 0 auto;">
     <h1>Lista de productos</h1>
     <p>
-      Esta página consulta la API en <code
-        >http://localhost:5042/api/Products</code
-      > y muestra todos los productos.
+      Consultando la API en <code>{api.baseUrl || "(sin baseUrl)"}/api/Products</code>.
     </p>
     <ProductList products={response.data} />
   </main>
