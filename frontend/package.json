@@ -7,7 +7,8 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "gen:api": "bunx swagger-typescript-api generate -p http://localhost:5042/swagger/v1/swagger.json -o src/lib/ -n api.ts"
   },
   "dependencies": {
     "@astrojs/react": "^4.4.2",
@@ -18,5 +19,8 @@
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "tailwindcss": "^4.1.17"
+  },
+  "devDependencies": {
+    "swagger-typescript-api": "^13.2.16"
   }
 }
