@@ -20,6 +20,19 @@ services:
     depends_on:
       - mongo
 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend_app
+    restart: always
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - mongo
+
   frontend:
     build:
       context: ./frontend
@@ -31,20 +44,7 @@ services:
     env_file:
       - ./frontend/.env
     depends_on:
-      - mongo
-
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: backend_app
-    restart: always
-    ports:
-      - "5000:80"
-    env_file:
-      - ./backend/.env
-    depends_on:
-      - mongo
+      - backend
 
 volumes:
   mongo_data:
