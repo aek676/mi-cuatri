@@ -1,0 +1,34 @@
+---
+import Layout from "../layouts/Layout.astro";
+import ProductList from "../components/ProductList.astro";
+import { Api } from "../lib/api";
+
+// Fetch the products from the backend API during SSR
+
+const api = new Api({ baseUrl: "http://localhost:5042" });
+
+const response = await api.api.productsList();
+---
+
+<Layout>
+  <main style="padding: 2rem; max-width: 900px; margin: 0 auto;">
+    <h1>Lista de productos</h1>
+    <p>
+      Esta página consulta la API en <code
+        >http://localhost:5042/api/Products</code
+      > y muestra todos los productos.
+    </p>
+    <ProductList products={response.data} />
+  </main>
+</Layout>
+
+<style>
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+  }
+  p {
+    margin-top: 0;
+    color: #6b7280;
+  }
+</style>

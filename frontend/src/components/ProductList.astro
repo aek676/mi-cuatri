@@ -1,0 +1,55 @@
+---
+import type { ProductDto } from "../lib/api";
+
+interface Props {
+  products: ProductDto[];
+}
+
+const { products = [] } = Astro.props;
+---
+
+<section class="product-list">
+  {
+    products.length === 0 ? (
+      <p>No hay productos disponibles.</p>
+    ) : (
+      <table class="products-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Cantidad</th>
+          </tr>
+        </thead>
+        <tbody>
+          {products.map((p) => (
+            <tr>
+              <td>{p.name}</td>
+              <td>{p.price}</td>
+              <td>{p.quantity}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    )
+  }
+</section>
+
+<style>
+  .product-list {
+    padding: 1rem;
+  }
+  .products-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .products-table th,
+  .products-table td {
+    border: 1px solid var(--astro-colors-border, #e5e7eb);
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+  }
+  .products-table thead th {
+    background: #f3f4f6;
+  }
+</style>
