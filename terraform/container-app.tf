@@ -11,6 +11,12 @@ resource "azurerm_container_app_environment" "micuatrienv" {
   log_analytics_workspace_id = azurerm_log_analytics_workspace.micuatrilaw.id
 }
 
+resource "azurerm_user_assigned_identity" "aca_identity" {
+  name                = "identity-aca-access"
+  location            = azurerm_resource_group.mi-cuatri.location
+  resource_group_name = azurerm_resource_group.mi-cuatri.name
+}
+
 resource "azurerm_container_app" "micuatriapp" {
   name                         = "micuatri-app"
   container_app_environment_id = azurerm_container_app_environment.micuatrienv.id
@@ -18,11 +24,8 @@ resource "azurerm_container_app" "micuatriapp" {
   revision_mode                = "Single"
 
   identity {
-    type = "SystemAssigned"
-  }
-
-  registry {
-    server   = azurerm_container_registry.acr.login_server
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.aca_identity.id]
   }
 
   template {
@@ -33,13 +36,14 @@ resource "azurerm_container_app" "micuatriapp" {
       memory = "0.5Gi"
     }
   }
+
+  ingress {
+    allow_insecure_connections = false
+    external_enabled           = true
+    target_port                = 80
+    traffic_weight {
+      percentage      = 100
+      latest_revision = true
+    }
+  }
 }
-
-resource "azurerm_role_assignment" "acr_pull" {
-  scope                = azurerm_container_registry.acr.id
-  role_definition_name = "AcrPull"
-  principal_id         = azurerm_container_app.micuatriapp.identity[0].principal_id
-}
-
-
-

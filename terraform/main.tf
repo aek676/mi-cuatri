@@ -1,4 +1,4 @@
 resource "azurerm_resource_group" "mi-cuatri" {
   name     = "mi-cuatri-rg"
-  location = "swedencentral"
+  location = var.location
 }
