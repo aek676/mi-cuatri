@@ -1,5 +1,5 @@
 interface ImportMetaEnv {
-    readonly PUBLIC_API_BASE_URL: string;
+    readonly API_BASE_URL?: string;
 }
 
 interface ImportMeta {

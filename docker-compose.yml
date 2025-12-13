@@ -1,24 +1,24 @@
 services:
-  mongo:
-    image: mongo
-    container_name: mongodb_server
-    restart: always
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-    env_file:
-      - .env
-  mongo-express:
-    image: mongo-express
-    container_name: mongo_express_ui
-    restart: always
-    ports:
-      - 8081:8081
-    env_file:
-      - .env
-    depends_on:
-      - mongo
+  # mongo:
+  #   image: mongo
+  #   container_name: mongodb_server
+  #   restart: always
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongo_data:/data/db
+  #   env_file:
+  #     - .env
+  # mongo-express:
+  #   image: mongo-express
+  #   container_name: mongo_express_ui
+  #   restart: always
+  #   ports:
+  #     - 8081:8081
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - mongo
 
   backend:
     build:
@@ -27,11 +27,9 @@ services:
     container_name: backend_app
     restart: always
     ports:
-      - "5000:5000"
+      - "5042:5042"
     env_file:
       - ./backend/.env
-    depends_on:
-      - mongo
 
   frontend:
     build:
@@ -45,6 +43,3 @@ services:
       - ./frontend/.env
     depends_on:
       - backend
-
-volumes:
-  mongo_data:
