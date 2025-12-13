@@ -1,0 +1,14 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0-preview-alpine AS build
+WORKDIR /source
+
+COPY backend.csproj ./
+RUN dotnet restore ./backend.csproj
+
+COPY . .
+RUN dotnet build -c Debug --no-restore 
+
+FROM build AS final
+WORKDIR /app
+COPY --from=build /source/bin/Debug/net10.0 .
+ENV ASPNETCORE_ENVIRONMENT=Development
+ENTRYPOINT ["dotnet", "backend.dll"]
