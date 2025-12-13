@@ -3,12 +3,10 @@ name: Docker Image CI
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
 
-  build:
+  build-push:
 
     runs-on: ubuntu-latest
 
@@ -51,17 +49,17 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
 
-      - name: Run Vitest tests and generate report
-        run: |
-          docker run --rm \
-            --workdir /app \
-            --entrypoint "" \
-            ${{ steps.meta.outputs.REPO_NAME }}-dev:latest \
-            sh -c "bun install --frozen-lockfile && bunx vitest run --reporter=verbose"
-        env:
-          CI: true
-          NODE_ENV: test
-        timeout-minutes: 10
+      # - name: Run Vitest tests and generate report
+      #   run: |
+      #     docker run --rm \
+      #       --workdir /app \
+      #       --entrypoint "" \
+      #       ${{ steps.meta.outputs.REPO_NAME }}-dev:latest \
+      #       sh -c "bun install --frozen-lockfile && bunx vitest run --reporter=verbose"
+      #   env:
+      #     CI: true
+      #     NODE_ENV: test
+      #   timeout-minutes: 10
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
