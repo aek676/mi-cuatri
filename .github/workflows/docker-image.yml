@@ -3,6 +3,9 @@ name: Docker Image CI
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/docker-image.yml'
 
 jobs:
 
