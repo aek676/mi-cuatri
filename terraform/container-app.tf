@@ -11,12 +11,6 @@ resource "azurerm_container_app_environment" "micuatrienv" {
   log_analytics_workspace_id = azurerm_log_analytics_workspace.micuatrilaw.id
 }
 
-resource "azurerm_user_assigned_identity" "aca_identity" {
-  name                = "identity-aca-access"
-  location            = azurerm_resource_group.mi-cuatri.location
-  resource_group_name = azurerm_resource_group.mi-cuatri.name
-}
-
 resource "azurerm_container_app" "micuatriapp" {
   name                         = "micuatri-app"
   container_app_environment_id = azurerm_container_app_environment.micuatrienv.id
@@ -45,5 +39,11 @@ resource "azurerm_container_app" "micuatriapp" {
       percentage      = 100
       latest_revision = true
     }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      template[0].container[0].image
+    ]
   }
 }
