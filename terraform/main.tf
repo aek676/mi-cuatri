@@ -136,7 +136,6 @@ resource "azurerm_linux_virtual_machine" "web" {
                 EOF
   )
 }
-
 output "web-address" {
   value = "${azurerm_public_ip.web.ip_address}:8080"
 }
