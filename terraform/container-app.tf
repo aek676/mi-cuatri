@@ -29,7 +29,7 @@ resource "azurerm_container_app" "micuatriapp" {
   ingress {
     allow_insecure_connections = false
     external_enabled           = true
-    target_port                = 80
+    target_port                = 4321
     traffic_weight {
       percentage      = 100
       latest_revision = true
@@ -41,4 +41,9 @@ resource "azurerm_container_app" "micuatriapp" {
       template[0].container[0].image
     ]
   }
+}
+
+output "container_app_url" {
+  description = "The URL of the Azure Container App"
+  value       = "https://${azurerm_container_app.micuatriapp.ingress[0].fqdn}"
 }
