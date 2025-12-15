@@ -98,9 +98,9 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Update Azure Container App
-        run: |
-          az containerapp update \
-            --name micuatri-app \
-            --resource-group mi-cuatri-rg \
-            --image ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKERHUB_FRONTEND_NAME }}:${{ steps.meta.outputs.SHORT_SHA }}
+      - name: Deploy to Container App
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          imageToDeploy: ${{ secrets.DOCKER_USERNAME }}/${{ secrets.DOCKERHUB_FRONTEND_NAME }}:${{ github.sha }}
+          containerAppName: micuatri-app
+          resourceGroup: mi-cuatri-rg
