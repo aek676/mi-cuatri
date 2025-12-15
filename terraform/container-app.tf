@@ -11,22 +11,11 @@ resource "azurerm_container_app_environment" "micuatrienv" {
   log_analytics_workspace_id = azurerm_log_analytics_workspace.micuatrilaw.id
 }
 
-resource "azurerm_user_assigned_identity" "aca_identity" {
-  name                = "identity-aca-access"
-  location            = azurerm_resource_group.mi-cuatri.location
-  resource_group_name = azurerm_resource_group.mi-cuatri.name
-}
-
 resource "azurerm_container_app" "micuatriapp" {
   name                         = "micuatri-app"
   container_app_environment_id = azurerm_container_app_environment.micuatrienv.id
   resource_group_name          = azurerm_resource_group.mi-cuatri.name
   revision_mode                = "Single"
-
-  identity {
-    type         = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.aca_identity.id]
-  }
 
   template {
     container {
@@ -40,10 +29,21 @@ resource "azurerm_container_app" "micuatriapp" {
   ingress {
     allow_insecure_connections = false
     external_enabled           = true
-    target_port                = 80
+    target_port                = 4321
     traffic_weight {
       percentage      = 100
       latest_revision = true
     }
   }
+
+  lifecycle {
+    ignore_changes = [
+      template[0].container[0].image
+    ]
+  }
+}
+
+output "container_app_url" {
+  description = "The URL of the Azure Container App"
+  value       = "https://${azurerm_container_app.micuatriapp.ingress[0].fqdn}"
 }
