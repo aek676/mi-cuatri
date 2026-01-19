@@ -9,6 +9,9 @@ services:
       - "5042:5042"
     env_file:
       - ./backend/.env
+    environment:
+     - ASPNETCORE_ENVIRONMENT=Development
+     - ConnectionStrings__MongoDB=mongodb://user:user@mongo:27017/mi-cuatri?authSource=admin
 
   frontend:
     build:
@@ -22,3 +25,34 @@ services:
       - ./frontend/.env
     depends_on:
       - backend
+
+  mongo:
+    image: mongo:8.2.3
+    container_name: mongo_db
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: user
+      MONGO_INITDB_ROOT_PASSWORD: user
+      MONGO_INITDB_DATABASE: mi-cuatri
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    
+  mongo-express:
+    image: mongo-express:1.0.2-20-alpine3.19
+    container_name: mongo_express
+    restart: always
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: user
+      ME_CONFIG_MONGODB_ADMINPASSWORD: user
+      ME_CONFIG_MONGODB_SERVER: mongo
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongo
+
+volumes:
+  mongo_data:
