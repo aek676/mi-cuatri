@@ -19,8 +19,17 @@ export interface CreateProductDto {
 }
 
 export interface LoginRequestDto {
-  username?: string | null;
-  password?: string | null;
+  /** @minLength 1 */
+  username: string;
+  /** @minLength 1 */
+  password: string;
+}
+
+export interface LoginResponseDto {
+  isSuccess?: boolean;
+  /** @minLength 1 */
+  message: string;
+  sessionCookie?: string | null;
 }
 
 export interface ProblemDetails {
@@ -48,6 +57,19 @@ export interface UpdateProductDto {
   price?: number;
   /** @format int32 */
   quantity?: number;
+}
+
+export interface UserDetailDto {
+  given?: string | null;
+  family?: string | null;
+  email?: string | null;
+  avatar?: string | null;
+}
+
+export interface UserResponseDto {
+  isSuccess?: boolean;
+  message?: string | null;
+  userData?: UserDetailDto;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -321,11 +343,12 @@ export class Api<
      * @request POST:/api/Auth/login-ual
      */
     authLoginUalCreate: (data: LoginRequestDto, params: RequestParams = {}) =>
-      this.request<void, any>({
+      this.request<LoginResponseDto, string | LoginResponseDto>({
         path: `/api/Auth/login-ual`,
         method: "POST",
         body: data,
         type: ContentType.Json,
+        format: "json",
         ...params,
       }),
 
@@ -337,9 +360,10 @@ export class Api<
      * @request GET:/api/Auth/me
      */
     authMeList: (params: RequestParams = {}) =>
-      this.request<void, any>({
+      this.request<UserResponseDto, any>({
         path: `/api/Auth/me`,
         method: "GET",
+        format: "json",
         ...params,
       }),
 

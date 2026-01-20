@@ -1,7 +1,7 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import ProductList from "../components/ProductList.astro";
-import { api } from "../lib/apiClient";
+import ProductList from '../components/ProductList.astro';
+import Layout from '../layouts/Layout.astro';
+import { api } from '../lib/apiClient';
 
 export const prerender = false;
 
@@ -12,7 +12,9 @@ const response = await api.api.productsList();
   <main style="padding: 2rem; max-width: 900px; margin: 0 auto;">
     <h1>Lista de productos</h1>
     <p>
-      Consultando la API en <code>{api.baseUrl || "(sin baseUrl)"}/api/Products</code>.
+      Consultando la API en <code
+        >{api.baseUrl || '(sin baseUrl)'}/api/Products</code
+      >.
     </p>
     <ProductList products={response.data} />
   </main>
