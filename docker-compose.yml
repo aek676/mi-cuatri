@@ -3,7 +3,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
-    container_name: backend_app
+    container_name: backend
     restart: always
     ports:
       - "5042:5042"
@@ -17,7 +17,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
-    container_name: frontend_app
+    container_name: frontend
     restart: always
     ports:
       - "4321:4321"
