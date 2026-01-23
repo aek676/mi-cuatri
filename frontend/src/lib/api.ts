@@ -368,6 +368,30 @@ export class Api<
       }),
 
     /**
+ * No description
+ *
+ * @tags ImageProxy
+ * @name ImageProxyList
+ * @summary Proxies an image request from Blackboard and returns the image stream as a blob.
+Accepts token only via X-Session-Cookie header
+ * @request GET:/api/ImageProxy
+ */
+    imageProxyList: (
+      query?: {
+        /** The URL of the image to proxy. */
+        imageUrl?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<string, ProblemDetails>({
+        path: `/api/ImageProxy`,
+        method: "GET",
+        query: query,
+        format: "blob",
+        ...params,
+      }),
+
+    /**
      * No description
      *
      * @tags Products

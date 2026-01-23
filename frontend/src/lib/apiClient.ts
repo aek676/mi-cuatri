@@ -1,6 +1,6 @@
 import { Api } from './api';
 
-const baseUrl = import.meta.env.API_BASE_URL || process.env.API_BASE_URL;
+const baseUrl = import.meta.env.PUBLIC_API_BASE_URL || 'http://localhost:5042';
 
 let instance: Api<unknown> | null = null;
 
