@@ -24,7 +24,7 @@ services:
     env_file:
       - ./frontend/.env
     environment:
-      - API_BASE_URL=http://backend:5042
+      - PUBLIC_API_BASE_URL=http://backend:5042
     depends_on:
       - backend
 
