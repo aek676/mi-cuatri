@@ -1,5 +1,4 @@
 using backend.Dtos;
-using System.Net.Http;
 
 namespace backend.Services
 {
@@ -29,5 +28,13 @@ namespace backend.Services
         /// <param name="acceptHeader">The optional Accept header for the image request.</param>
         /// <returns>The proxied HTTP response message or null if unsuccessful.</returns>
         Task<HttpResponseMessage?> GetProxiedImageResponseAsync(string sessionCookie, string imageUrl, string? acceptHeader = null);
+
+        /// <summary>
+        /// Retrieves calendar items within the calculated range using Blackboard public calendar API.
+        /// </summary>
+        /// <param name="currentDate">Reference date to calculate the start of month and 16-week window.</param>
+        /// <param name="sessionCookie">The session cookie for authentication.</param>
+        /// <returns>Collection of mapped calendar items.</returns>
+        Task<IEnumerable<CalendarItemDto>> GetCalendarItemsAsync(DateTime currentDate, string sessionCookie);
     }
 }
