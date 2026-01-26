@@ -3,6 +3,7 @@ using System.IO;
 using backend.Repositories;
 using backend.Services;
 using DotNetEnv;
+using System.Text.Json.Serialization;
 
 DotNetEnv.Env.Load();
 
@@ -14,7 +15,8 @@ if (string.IsNullOrEmpty(connetionString))
     throw new Exception("Connection string not found. Ensure the .env file is correctly configured and placed in the root directory.");
 }
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

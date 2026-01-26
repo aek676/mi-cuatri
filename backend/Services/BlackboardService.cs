@@ -1,5 +1,6 @@
 using HtmlAgilityPack;
 using backend.Dtos;
+using backend.Enums;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -242,7 +243,7 @@ namespace backend.Services
                 client.DefaultRequestHeaders.Add("Accept", "*/*");
                 client.DefaultRequestHeaders.ExpectContinue = false;
 
-                var request = new HttpRequestMessage(HttpMethod.Get, $"{API_CALENDAR_ITEMS_URL}?since={since}&until={until}");
+                var request = new HttpRequestMessage(HttpMethod.Get, $"{API_CALENDAR_ITEMS_URL}?since={since}&until={until}&sort=start");
                 request.Headers.Add("Cookie", NormalizeCookie(sessionCookie));
 
                 var response = await client.SendAsync(request);
@@ -291,7 +292,7 @@ namespace backend.Services
                         Start = start,
                         End = end,
                         Location = obj["location"]?.ToString() ?? string.Empty,
-                        Category = type,
+                        Category = ParseCalendarCategory(type),
                         Subject = subject,
                         Color = obj["color"]?.ToString() ?? string.Empty,
                         Description = obj["description"]?.ToString()
@@ -327,6 +328,24 @@ namespace backend.Services
         {
             var match = Regex.Match(calendarName, " - (?<subject>[^-]+?) - ", RegexOptions.Compiled);
             return match.Success ? match.Groups["subject"].Value.Trim() : string.Empty;
+        }
+
+        private static CalendarCategory ParseCalendarCategory(string categoryString)
+        {
+            if (string.IsNullOrWhiteSpace(categoryString))
+            {
+                return CalendarCategory.Course; // Default fallback
+            }
+
+            // Try case-insensitive parsing
+            if (Enum.TryParse<CalendarCategory>(categoryString, ignoreCase: true, out var result))
+            {
+                return result;
+            }
+
+            // Log warning for unrecognized category and default to Course
+            System.Diagnostics.Debug.WriteLine($"Warning: Unrecognized calendar category '{categoryString}', defaulting to Course");
+            return CalendarCategory.Course;
         }
     }
 }
