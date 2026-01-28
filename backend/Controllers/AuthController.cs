@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using backend.Dtos;
 using backend.Services;
+using backend.Repositories;
 
 namespace backend.Controllers
 {
@@ -12,14 +13,17 @@ namespace backend.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IBlackboardService _blackboardService;
+        private readonly IUserRepository _userRepository;
 
         /// <summary>
         /// Initializes a new instance of the AuthController class.
         /// </summary>
         /// <param name="blackboardService">The blackboard service for authentication.</param>
-        public AuthController(IBlackboardService blackboardService)
+        /// <param name="userRepository">The user repository for persisting username on login.</param>
+        public AuthController(IBlackboardService blackboardService, IUserRepository userRepository)
         {
             _blackboardService = blackboardService;
+            _userRepository = userRepository;
         }
 
         /// <summary>
@@ -37,6 +41,7 @@ namespace backend.Controllers
 
             if (result.IsSuccess)
             {
+                await _userRepository.UpsertByUsernameAsync(request.Username);
                 return Ok(result);
             }
             else

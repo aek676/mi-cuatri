@@ -26,6 +26,7 @@ builder.Services.AddSwaggerGen(c =>
     c.IncludeXmlComments(xmlPath);
 });
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IBlackboardService, BlackboardService>();
 builder.Services.AddScoped<backend.Data.MongoDbContext>();
 builder.Services.AddCors();
