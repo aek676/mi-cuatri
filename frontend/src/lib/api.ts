@@ -10,6 +10,55 @@
  * ---------------------------------------------------------------
  */
 
+/** Represents the category types for calendar events from Blackboard. */
+export enum CalendarCategory {
+  Course = "Course",
+  GradebookColumn = "GradebookColumn",
+  Institution = "Institution",
+  OfficeHours = "OfficeHours",
+  Personal = "Personal",
+}
+
+/** Clean calendar event item mapped from Blackboard raw calendar entries. */
+export interface CalendarItemDto {
+  /**
+   * Gets the calendar item identifier mapped from the Blackboard 'id' field.
+   * @minLength 1
+   */
+  calendarid: string;
+  /**
+   * Gets the event title.
+   * @minLength 1
+   */
+  title: string;
+  /**
+   * Gets the event start date/time in UTC.
+   * @format date-time
+   */
+  start: string;
+  /**
+   * Gets the event end date/time in UTC.
+   * @format date-time
+   */
+  end: string;
+  /** Gets the physical or virtual location of the event. */
+  location?: string | null;
+  /** Represents the category types for calendar events from Blackboard. */
+  category: CalendarCategory;
+  /**
+   * Gets the cleaned subject/course name extracted from the calendar name using regex. Empty for Institution/Personal categories.
+   * @minLength 1
+   */
+  subject: string;
+  /**
+   * Gets the hexadecimal color code for visual representation.
+   * @minLength 1
+   */
+  color: string;
+  /** Gets the optional event description. */
+  description?: string | null;
+}
+
 /** Data transfer object for creating a new product. */
 export interface CreateProductDto {
   name?: string | null;
@@ -390,6 +439,32 @@ export class Api<
       this.request<UserResponseDto, any>({
         path: `/api/Auth/me`,
         method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Calendar
+     * @name CalendarList
+     * @summary Gets calendar items from Blackboard in a 16-week window starting at the first day of the month for the provided date.
+     * @request GET:/api/Calendar
+     */
+    calendarList: (
+      query?: {
+        /**
+         * Reference date used to calculate the window.
+         * @format date-time
+         */
+        currentDate?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<CalendarItemDto[], ProblemDetails | void>({
+        path: `/api/Calendar`,
+        method: "GET",
+        query: query,
         format: "json",
         ...params,
       }),
