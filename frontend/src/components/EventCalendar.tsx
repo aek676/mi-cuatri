@@ -8,7 +8,7 @@ import {
   Download,
   Plus,
 } from 'lucide-react';
-import { useEffect, useRef, useState, useReducer } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import AddEventDialog from './calendar/AddEventDialog';
 import EventDialog from './calendar/EventDialog';
 import MobileList from './calendar/MobileList';
@@ -98,8 +98,6 @@ export function EventCalendar({ events = [] }: Props) {
 
   return (
     <div className="flex flex-col h-full flex-1 min-h-0 bg-[#F8FAFC] font-sans">
-      <style>{`:root{--color-brand-dark:#1C3A5B;--color-brand-main:#315F94;--color-brand-light:#6B9AC4;--color-brand-pale:#D6E4F0;--color-brand-white:#FFFFFF;}`}</style>
-
       <header className="px-4 md:px-6 py-4 bg-white border-b border-brand-pale shadow-sm flex flex-col md:flex-row justify-between items-center gap-4 z-10 shrink-0">
         <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
           <div className="flex items-center gap-3">
