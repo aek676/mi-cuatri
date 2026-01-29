@@ -1,8 +1,4 @@
-import type {
-  ExportSummaryDto,
-  GoogleConnectResponse,
-  GoogleStatusDto,
-} from '@/lib/api';
+import type { ExportSummaryDto, GoogleStatusDto } from '@/lib/api';
 import { actions } from 'astro:actions';
 import { useCallback, useState } from 'react';
 import { toast } from 'sonner';
@@ -10,6 +6,7 @@ import { toast } from 'sonner';
 export function useGoogleCalendar() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [isConnected, setIsConnected] = useState<boolean | null>(null);
 
   const getStatus = useCallback(async (): Promise<GoogleStatusDto> => {
     setLoading(true);
@@ -20,7 +17,9 @@ export function useGoogleCalendar() {
       if (res.error) {
         throw new Error((res.error as any)?.message || 'Error fetching status');
       }
-      return res.data as GoogleStatusDto;
+      const data = res.data;
+      setIsConnected(data.isConnected);
+      return data;
     } catch (err: any) {
       setError(err);
       throw err;
@@ -43,14 +42,20 @@ export function useGoogleCalendar() {
           (res.error as any)?.message || 'Error starting connect',
         );
       }
-      return res.data as GoogleConnectResponse;
+      const data = res.data;
+      try {
+        await getStatus();
+      } catch {
+        // ignore status refresh errors
+      }
+      return data;
     } catch (err: any) {
       setError(err);
       throw err;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [getStatus]);
 
   const exportEvents = useCallback(
     async (from?: string): Promise<ExportSummaryDto> => {
@@ -81,5 +86,12 @@ export function useGoogleCalendar() {
     [],
   );
 
-  return { getStatus, connect, exportEvents, loading, error } as const;
+  return {
+    getStatus,
+    connect,
+    exportEvents,
+    loading,
+    error,
+    isConnected,
+  } as const;
 }

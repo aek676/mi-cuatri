@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui';
+import { Spinner } from '@/components/ui/spinner';
 import { useGoogleCalendar } from '@/hooks/useGoogleCalendar';
 import { getMonthData } from '@/lib/calendarUtils';
 import type { CalendarEvent } from '@/lib/types';
@@ -19,7 +20,13 @@ type Props = {
 };
 
 export function EventCalendar({ events = [] }: Props) {
-  const { exportEvents, connect, loading: gcLoading } = useGoogleCalendar();
+  const {
+    exportEvents,
+    connect,
+    loading: gcLoading,
+    getStatus,
+    isConnected,
+  } = useGoogleCalendar();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarDays, setCalendarDays] = useState<
     import('@/lib/calendarUtils').CalendarDay[]
@@ -57,6 +64,11 @@ export function EventCalendar({ events = [] }: Props) {
   useEffect(() => {
     dispatch({ type: 'set', payload: events || [] });
   }, [events]);
+
+  useEffect(() => {
+    // Get current connection status on mount
+    getStatus().catch((err) => console.error('[Status Error]', err));
+  }, [getStatus]);
 
   const nextMonth = () =>
     setCurrentDate(
@@ -163,23 +175,33 @@ export function EventCalendar({ events = [] }: Props) {
               <Plus size={14} aria-hidden />
               <span className="hidden sm:inline">Add Event</span>
             </Button>
+
             <Button
-              variant="outline"
-              onClick={handleExport}
-              aria-label="Export events"
+              variant={isConnected ? 'outline' : 'ghost'}
+              onClick={isConnected ? handleExport : handleConnect}
+              aria-label={isConnected ? 'Export events' : 'Connect Google'}
               disabled={gcLoading}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white border border-brand-main text-brand-main rounded-md font-semibold text-sm hover:bg-brand-pale transition-colors shadow-sm"
+              className={
+                isConnected
+                  ? 'flex items-center gap-2 px-3 py-1.5 bg-white border border-brand-main text-brand-main rounded-md font-semibold text-sm hover:bg-brand-pale transition-colors shadow-sm'
+                  : 'flex items-center gap-2 px-3 py-1.5 text-sm text-brand-dark rounded-md hover:bg-brand-pale transition-colors'
+              }
             >
-              <Download size={14} aria-hidden />
-              <span className="hidden sm:inline">Export</span>
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={handleConnect}
-              aria-label="Connect Google"
-              className="flex items-center gap-2 px-3 py-1.5 text-sm text-brand-dark rounded-md hover:bg-brand-pale transition-colors"
-            >
-              <span className="hidden sm:inline">Connect</span>
+              {gcLoading ? (
+                <>
+                  <Spinner className="w-4 h-4" />
+                  <span className="hidden sm:inline">
+                    {isConnected ? 'Exporting...' : 'Connecting...'}
+                  </span>
+                </>
+              ) : isConnected ? (
+                <>
+                  <Download size={14} aria-hidden />
+                  <span className="hidden sm:inline">Export</span>
+                </>
+              ) : (
+                <span className="hidden sm:inline">Connect</span>
+              )}
             </Button>
           </div>
 
