@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui';
+import { useGoogleCalendar } from '@/hooks/useGoogleCalendar';
 import { getMonthData } from '@/lib/calendarUtils';
 import type { CalendarEvent } from '@/lib/types';
 import {
@@ -13,12 +14,12 @@ import AddEventDialog from './calendar/AddEventDialog';
 import EventDialog from './calendar/EventDialog';
 import MobileList from './calendar/MobileList';
 import MonthGrid from './calendar/MonthGrid';
-
 type Props = {
   events?: CalendarEvent[];
 };
 
 export function EventCalendar({ events = [] }: Props) {
+  const { exportEvents, connect, loading: gcLoading } = useGoogleCalendar();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarDays, setCalendarDays] = useState<
     import('@/lib/calendarUtils').CalendarDay[]
@@ -66,7 +67,23 @@ export function EventCalendar({ events = [] }: Props) {
       new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1),
     );
   const goToToday = () => setCurrentDate(new Date());
-  const handleExport = () => console.log('exporting events', items.length);
+
+  const handleExport = async () => {
+    try {
+      await exportEvents();
+    } catch (err) {
+      console.error('[Export Error]', err);
+    }
+  };
+
+  const handleConnect = async () => {
+    try {
+      const data = await connect();
+      if (data?.url) window.open(data.url, '_blank');
+    } catch (err) {
+      console.error('[Connect Error]', err);
+    }
+  };
 
   const handleAddEvent = (newEvent: CalendarEvent) => {
     dispatch({ type: 'add', payload: newEvent });
@@ -150,10 +167,19 @@ export function EventCalendar({ events = [] }: Props) {
               variant="outline"
               onClick={handleExport}
               aria-label="Export events"
+              disabled={gcLoading}
               className="flex items-center gap-2 px-3 py-1.5 bg-white border border-brand-main text-brand-main rounded-md font-semibold text-sm hover:bg-brand-pale transition-colors shadow-sm"
             >
               <Download size={14} aria-hidden />
               <span className="hidden sm:inline">Export</span>
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={handleConnect}
+              aria-label="Connect Google"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-brand-dark rounded-md hover:bg-brand-pale transition-colors"
+            >
+              <span className="hidden sm:inline">Connect</span>
             </Button>
           </div>
 
