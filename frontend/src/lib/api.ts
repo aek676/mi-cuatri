@@ -86,7 +86,7 @@ export interface GoogleConnectResponse {
 }
 
 export interface GoogleStatusDto {
-  isConnected?: boolean;
+  isConnected: boolean;
   email?: string | null;
 }
 
