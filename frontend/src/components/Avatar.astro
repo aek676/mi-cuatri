@@ -1,5 +1,5 @@
 ---
-import { api } from '@/lib/apiClient';
+import { createApiClient } from '@/lib/apiClient';
 
 const {
   avatarUrl,
@@ -19,14 +19,8 @@ let imageSrc: string | null = null;
 
 if (avatarUrl && sessionToken) {
   try {
-    const response = await api.api.imageProxyList(
-      { imageUrl: avatarUrl },
-      {
-        headers: {
-          'X-Session-Cookie': sessionToken,
-        },
-      },
-    );
+    const api = createApiClient(sessionToken);
+    const response = await api.api.imageProxyList({ imageUrl: avatarUrl });
 
     if (response.data) {
       const blob = response.data as unknown as Blob;

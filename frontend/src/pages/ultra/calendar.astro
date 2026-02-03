@@ -2,20 +2,19 @@
 import EventCalendar from '@/components/EventCalendar';
 import AppLayout from '@/layouts/AppLayout.astro';
 import type { CalendarItemDto } from '@/lib/api';
-import { api } from '@/lib/apiClient';
+import { createApiClient } from '@/lib/apiClient';
 
-const sessionToken = Astro.cookies.get('bb_session')?.value;
-if (!sessionToken) {
-  return Astro.redirect('/login');
-}
+const sessionToken = Astro.locals.sessionToken;
+if (!sessionToken) return Astro.redirect('/login');
+
+const api = createApiClient(sessionToken);
 
 let events: CalendarItemDto[] = [];
 
 try {
-  const { data } = await api.api.calendarList(
-    { currentDate: new Date().toISOString() },
-    { headers: { 'X-Session-Cookie': sessionToken } },
-  );
+  const { data } = await api.api.calendarList({
+    currentDate: new Date().toISOString(),
+  });
 
   if (data) {
     events = data;

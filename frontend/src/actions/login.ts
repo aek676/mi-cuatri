@@ -1,15 +1,22 @@
-import { api } from '@/lib/apiClient';
+import { createApiClient } from '@/lib/apiClient';
 import { z } from 'astro/zod';
 import { ActionError, defineAction } from 'astro:actions';
 
 export const login = defineAction({
   accept: 'form',
   input: z.object({
-    username: z.string().min(1, 'Username is required').trim(),
-    password: z.string().min(1, 'Password is required'),
+    username: z
+      .string({
+        message: 'Username is required',
+      })
+      .trim(),
+    password: z.string({
+      message: 'Password is required',
+    }),
   }),
   handler: async (input, context) => {
     try {
+      const api = createApiClient();
       const res = await api.api.authLoginUalCreate({
         username: input.username,
         password: input.password,
