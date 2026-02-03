@@ -1,6 +1,7 @@
 import { Api } from './api';
 
-const baseUrl = import.meta.env.INTERNAL_API_BASE_URL;
+const baseUrl =
+  process.env.INTERNAL_API_BASE_URL || import.meta.env.INTERNAL_API_BASE_URL;
 
 export function createApiClient(sessionToken?: string | null) {
   const api = new Api({
