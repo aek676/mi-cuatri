@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers
 {
+    /// <summary>
+    /// Controller for Google Calendar integration endpoints (status and export operations).
+    /// </summary>
     [ApiController]
     [Route("api/calendar/google")]
     public class GoogleCalendarController : ControllerBase
@@ -13,6 +16,12 @@ namespace backend.Controllers
         private readonly IUserRepository _userRepository;
         private readonly IBlackboardService _blackboardService;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GoogleCalendarController"/> class.
+        /// </summary>
+        /// <param name="googleCalendarService">Service that handles Google Calendar export operations.</param>
+        /// <param name="userRepository">Repository to resolve local users.</param>
+        /// <param name="blackboardService">Service used to validate Blackboard sessions and fetch calendar items.</param>
         public GoogleCalendarController(IGoogleCalendarService googleCalendarService, IUserRepository userRepository, IBlackboardService blackboardService)
         {
             _googleCalendarService = googleCalendarService;
@@ -23,6 +32,7 @@ namespace backend.Controllers
         /// <summary>
         /// Returns whether the current Blackboard-authenticated user has a Google account linked.
         /// </summary>
+        /// <param name="sessionCookieHeader">Optional session cookie extracted from the 'X-Session-Cookie' header; falls back to 'Cookie' header.</param>
         [HttpGet("status")]
         [ProducesResponseType(typeof(GoogleStatusDto), StatusCodes.Status200OK)]
         public async Task<ActionResult<GoogleStatusDto>> Status([FromHeader(Name = "X-Session-Cookie")] string? sessionCookieHeader)
@@ -46,6 +56,7 @@ namespace backend.Controllers
         /// Exports calendar items from Blackboard to the user's Google Calendar synchronously.
         /// Returns a summary with counts of created, updated and failed events.
         /// </summary>
+        /// <param name="sessionCookieHeader">Optional session cookie extracted from the 'X-Session-Cookie' header; falls back to 'Cookie' header.</param>
         /// <param name="from">Optional reference date to export the 16-week window starting at the first day of the month for this date. Defaults to now.</param>
         [HttpPost("export")]
         [ProducesResponseType(typeof(ExportSummaryDto), StatusCodes.Status200OK)]

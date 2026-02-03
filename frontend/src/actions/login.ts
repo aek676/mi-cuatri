@@ -1,15 +1,22 @@
-import { api } from '@/lib/apiClient';
+import { createApiClient } from '@/lib/apiClient';
 import { z } from 'astro/zod';
 import { ActionError, defineAction } from 'astro:actions';
 
 export const login = defineAction({
   accept: 'form',
   input: z.object({
-    username: z.string().min(1, 'El usuario es obligatorio').trim(),
-    password: z.string().min(1, 'La contraseña es obligatoria'),
+    username: z
+      .string({
+        message: 'Username is required',
+      })
+      .trim(),
+    password: z.string({
+      message: 'Password is required',
+    }),
   }),
   handler: async (input, context) => {
     try {
+      const api = createApiClient();
       const res = await api.api.authLoginUalCreate({
         username: input.username,
         password: input.password,
@@ -18,7 +25,7 @@ export const login = defineAction({
       if (!res.data.isSuccess || !res.data.sessionCookie) {
         throw new ActionError({
           code: 'UNAUTHORIZED',
-          message: res.data.message || 'Credenciales incorrectas',
+          message: res.data.message || 'Invalid credentials',
         });
       }
 
@@ -32,7 +39,7 @@ export const login = defineAction({
 
       return {
         success: true,
-        message: 'Sesión iniciada correctamente',
+        message: 'Logged in successfully',
       };
     } catch (err: any) {
       console.error('[Login Action Error]:', err);
@@ -43,7 +50,7 @@ export const login = defineAction({
 
       throw new ActionError({
         code: 'INTERNAL_SERVER_ERROR',
-        message: 'Ocurrió un error inesperado al intentar iniciar sesión.',
+        message: 'An unexpected error occurred while attempting to log in.',
       });
     }
   },

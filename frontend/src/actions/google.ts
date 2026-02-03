@@ -1,5 +1,4 @@
-import type { ExportSummaryDto, GoogleConnectResponse, GoogleStatusDto } from '@/lib/api';
-import { api } from '@/lib/apiClient';
+import { createApiClient } from '@/lib/apiClient';
 import { z } from 'astro/zod';
 import { ActionError, defineAction } from 'astro:actions';
 
@@ -15,9 +14,8 @@ export const google = {
           });
         }
 
-        const res = await api.api.calendarGoogleStatusList({
-          headers: { 'X-Session-Cookie': cookie },
-        });
+        const api = createApiClient(cookie);
+        const res = await api.api.calendarGoogleStatusList();
 
         if (res.error) {
           throw new ActionError({
@@ -26,7 +24,7 @@ export const google = {
           });
         }
 
-        return res.data as GoogleStatusDto;
+        return res.data;
       } catch (err: any) {
         console.error('[Google.getStatus Error]:', err);
         if (err instanceof ActionError) throw err;
@@ -49,9 +47,8 @@ export const google = {
           });
         }
 
-        const res = await api.api.authGoogleConnectList({
-          headers: { 'X-Session-Cookie': cookie },
-        });
+        const api = createApiClient(cookie);
+        const res = await api.api.authGoogleConnectList();
 
         if (res.error) {
           throw new ActionError({
@@ -60,7 +57,7 @@ export const google = {
           });
         }
 
-        return res.data as GoogleConnectResponse;
+        return res.data;
       } catch (err: any) {
         console.error('[Google.connect Error]:', err);
         if (err instanceof ActionError) throw err;
@@ -85,10 +82,10 @@ export const google = {
           });
         }
 
-        const res = await api.api.calendarGoogleExportCreate(
-          { from: input.from },
-          { headers: { 'X-Session-Cookie': cookie } },
-        );
+        const api = createApiClient(cookie);
+        const res = await api.api.calendarGoogleExportCreate({
+          from: input.from,
+        });
 
         if (res.error) {
           throw new ActionError({
@@ -97,7 +94,7 @@ export const google = {
           });
         }
 
-        return res.data as ExportSummaryDto;
+        return res.data;
       } catch (err: any) {
         console.error('[Google.export Error]:', err);
         if (err instanceof ActionError) throw err;
