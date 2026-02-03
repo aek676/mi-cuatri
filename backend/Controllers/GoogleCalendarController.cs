@@ -32,9 +32,9 @@ namespace backend.Controllers
         /// <summary>
         /// Returns whether the current Blackboard-authenticated user has a Google account linked.
         /// </summary>
+        /// <param name="sessionCookieHeader">Optional session cookie extracted from the 'X-Session-Cookie' header; falls back to 'Cookie' header.</param>
         [HttpGet("status")]
         [ProducesResponseType(typeof(GoogleStatusDto), StatusCodes.Status200OK)]
-        /// <param name="sessionCookieHeader">Optional session cookie extracted from the 'X-Session-Cookie' header; falls back to 'Cookie' header.</param>
         public async Task<ActionResult<GoogleStatusDto>> Status([FromHeader(Name = "X-Session-Cookie")] string? sessionCookieHeader)
         {
             var cookie = sessionCookieHeader;

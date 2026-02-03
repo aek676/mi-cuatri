@@ -7,6 +7,8 @@ services:
     restart: always
     ports:
       - "5042:5042"
+    env_file:
+      - ./backend/.env
     environment:
      - ASPNETCORE_ENVIRONMENT=Development
      - ASPNETCORE_URLS=http://+:5042
