@@ -2,13 +2,26 @@ import { Api } from './api';
 
 const baseUrl = import.meta.env.INTERNAL_API_BASE_URL;
 
-let instance: Api<unknown> | null = null;
+export function createApiClient(sessionToken?: string | null) {
+  const api = new Api({
+    baseUrl,
+    baseApiParams: {
+      secure: true,
+      credentials: 'same-origin',
+      headers: {},
+      redirect: 'follow',
+      referrerPolicy: 'no-referrer',
+    },
+    securityWorker: (securityData) => {
+      if (!securityData) return {};
+      return {
+        headers: {
+          'X-Session-Cookie': String(securityData),
+        },
+      };
+    },
+  });
 
-export function getApi() {
-  if (!instance) {
-    instance = new Api({ baseUrl });
-  }
-  return instance;
+  api.setSecurityData(sessionToken ?? null);
+  return api;
 }
-  
-export const api = getApi();

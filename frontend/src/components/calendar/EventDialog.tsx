@@ -84,7 +84,7 @@ function EventDialog({
                 color: event.color || 'var(--color-brand-dark)',
               }}
             >
-              {event.category === 'Course' ? 'Course' : 'Assignment / Exam'}
+              {event.category}
             </span>
           </div>
         </div>

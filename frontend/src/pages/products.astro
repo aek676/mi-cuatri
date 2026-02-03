@@ -1,10 +1,14 @@
 ---
 import ProductList from '../components/ProductList.astro';
 import Layout from '../layouts/Layout.astro';
-import { api } from '../lib/apiClient';
+import { createApiClient } from '../lib/apiClient';
 
 export const prerender = false;
 
+const sessionToken = Astro.locals.sessionToken;
+if (!sessionToken) return Astro.redirect('/login');
+
+const api = createApiClient(sessionToken);
 const response = await api.api.productsList();
 ---
 
