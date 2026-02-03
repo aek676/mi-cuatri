@@ -1,10 +1,10 @@
 using System.Reflection;
-using System.IO;
 using backend.Repositories;
 using backend.Services;
 using DotNetEnv;
+using System.Text.Json.Serialization;
 
-DotNetEnv.Env.Load();
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +14,8 @@ if (string.IsNullOrEmpty(connetionString))
     throw new Exception("Connection string not found. Ensure the .env file is correctly configured and placed in the root directory.");
 }
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -24,8 +25,14 @@ builder.Services.AddSwaggerGen(c =>
     c.IncludeXmlComments(xmlPath);
 });
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IBlackboardService, BlackboardService>();
+builder.Services.AddScoped<IGoogleCalendarService, GoogleCalendarService>();
 builder.Services.AddScoped<backend.Data.MongoDbContext>();
+
+builder.Services.AddDataProtection();
+builder.Services.AddSingleton<ITokenProtector, TokenProtector>();
+
 builder.Services.AddCors();
 
 var app = builder.Build();

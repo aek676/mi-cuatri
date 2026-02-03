@@ -1,5 +1,6 @@
 ---
-import "../styles/global.css";
+import { Toaster } from '@/components/ui/sonner';
+import '@/styles/global.css';
 ---
 
 <!doctype html>
@@ -13,6 +14,7 @@ import "../styles/global.css";
   </head>
   <body>
     <slot />
+    <Toaster client:load />
   </body>
 </html>
 

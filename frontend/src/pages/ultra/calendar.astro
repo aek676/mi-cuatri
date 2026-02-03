@@ -1,0 +1,45 @@
+---
+import EventCalendar from '@/components/EventCalendar';
+import type { CalendarItemDto } from '@/lib/api';
+import { api } from '@/lib/apiClient';
+import '@/styles/global.css';
+
+const sessionToken = Astro.cookies.get('bb_session')?.value;
+
+let events: CalendarItemDto[] = [];
+if (sessionToken) {
+  try {
+    const { data } = await api.api.calendarList(
+      { currentDate: new Date().toISOString() },
+      { headers: { 'X-Session-Cookie': sessionToken } },
+    );
+
+    if (data) {
+      events = data;
+    }
+  } catch (error) {
+    console.error('Error validating session:', error);
+  }
+}
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Calendario Académico</title>
+  </head>
+  <body class="h-screen w-screen bg-background text-foreground overflow-auto">
+    <main class="h-full w-full p-6 flex flex-col items-center">
+      <h1 class="text-3xl font-bold mb-4 text-brand-dark">
+        Calendario Académico
+      </h1>
+      <div
+        class="flex-1 w-full border rounded-lg shadow-sm bg-card overflow-auto"
+      >
+        <EventCalendar client:load events={events} />
+      </div>
+    </main>
+  </body>
+</html>

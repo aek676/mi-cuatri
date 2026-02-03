@@ -10,5 +10,5 @@ export function getApi() {
   }
   return instance;
 }
-
+  
 export const api = getApi();

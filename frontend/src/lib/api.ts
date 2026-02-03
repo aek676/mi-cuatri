@@ -10,6 +10,55 @@
  * ---------------------------------------------------------------
  */
 
+/** Represents the category types for calendar events from Blackboard. */
+export enum CalendarCategory {
+  Course = "Course",
+  GradebookColumn = "GradebookColumn",
+  Institution = "Institution",
+  OfficeHours = "OfficeHours",
+  Personal = "Personal",
+}
+
+/** Clean calendar event item mapped from Blackboard raw calendar entries. */
+export interface CalendarItemDto {
+  /**
+   * Gets the calendar item identifier mapped from the Blackboard 'id' field.
+   * @minLength 1
+   */
+  calendarid: string;
+  /**
+   * Gets the event title.
+   * @minLength 1
+   */
+  title: string;
+  /**
+   * Gets the event start date/time in UTC.
+   * @format date-time
+   */
+  start: string;
+  /**
+   * Gets the event end date/time in UTC.
+   * @format date-time
+   */
+  end: string;
+  /** Gets the physical or virtual location of the event. */
+  location?: string | null;
+  /** Represents the category types for calendar events from Blackboard. */
+  category: CalendarCategory;
+  /**
+   * Gets the cleaned subject/course name extracted from the calendar name using regex. Empty for Institution/Personal categories.
+   * @minLength 1
+   */
+  subject: string;
+  /**
+   * Gets the hexadecimal color code for visual representation.
+   * @minLength 1
+   */
+  color: string;
+  /** Gets the optional event description. */
+  description?: string | null;
+}
+
 /** Data transfer object for creating a new product. */
 export interface CreateProductDto {
   name?: string | null;
@@ -17,6 +66,28 @@ export interface CreateProductDto {
   price?: number;
   /** @format int32 */
   quantity?: number;
+}
+
+export interface ExportSummaryDto {
+  /** @format int32 */
+  created?: number;
+  /** @format int32 */
+  updated?: number;
+  /** @format int32 */
+  failed?: number;
+  errors?: string[] | null;
+}
+
+export interface GoogleConnectResponse {
+  /** @format uri */
+  url: string;
+  /** @minLength 1 */
+  stateToken: string;
+}
+
+export interface GoogleStatusDto {
+  isConnected: boolean;
+  email?: string | null;
 }
 
 /** Data transfer object for login requests. */
@@ -390,6 +461,118 @@ export class Api<
       this.request<UserResponseDto, any>({
         path: `/api/Auth/me`,
         method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Calendar
+     * @name CalendarList
+     * @summary Gets calendar items from Blackboard in a 16-week window starting at the first day of the month for the provided date.
+     * @request GET:/api/Calendar
+     */
+    calendarList: (
+      query?: {
+        /**
+         * Reference date used to calculate the window.
+         * @format date-time
+         */
+        currentDate?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<CalendarItemDto[], ProblemDetails | void>({
+        path: `/api/Calendar`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+ * No description
+ *
+ * @tags GoogleAuth
+ * @name AuthGoogleConnectList
+ * @summary Returns the Google OAuth2 authorization URL for the frontend to redirect the user and obtain consent.
+Uses the minimal calendar events scope and requests offline access (refresh token).
+Stores the Blackboard session temporarily to retrieve it in the callback.
+ * @request GET:/api/auth/google/connect
+ */
+    authGoogleConnectList: (params: RequestParams = {}) =>
+      this.request<GoogleConnectResponse, ProblemDetails>({
+        path: `/api/auth/google/connect`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+ * No description
+ *
+ * @tags GoogleAuth
+ * @name AuthGoogleCallbackList
+ * @summary OAuth2 callback endpoint that exchanges the authorization code for tokens
+and links the Google account (stores refresh token) to the current authenticated user (identified via state token).
+ * @request GET:/api/auth/google/callback
+ */
+    authGoogleCallbackList: (
+      query?: {
+        /** Authorization code returned by Google. */
+        code?: string;
+        /** State token used to correlate the OAuth flow with the originating session. */
+        state?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<void, ProblemDetails>({
+        path: `/api/auth/google/callback`,
+        method: "GET",
+        query: query,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags GoogleCalendar
+     * @name CalendarGoogleStatusList
+     * @summary Returns whether the current Blackboard-authenticated user has a Google account linked.
+     * @request GET:/api/calendar/google/status
+     */
+    calendarGoogleStatusList: (params: RequestParams = {}) =>
+      this.request<GoogleStatusDto, any>({
+        path: `/api/calendar/google/status`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+ * No description
+ *
+ * @tags GoogleCalendar
+ * @name CalendarGoogleExportCreate
+ * @summary Exports calendar items from Blackboard to the user's Google Calendar synchronously.
+Returns a summary with counts of created, updated and failed events.
+ * @request POST:/api/calendar/google/export
+ */
+    calendarGoogleExportCreate: (
+      query?: {
+        /**
+         * Optional reference date to export the 16-week window starting at the first day of the month for this date. Defaults to now.
+         * @format date-time
+         */
+        from?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<ExportSummaryDto, ProblemDetails>({
+        path: `/api/calendar/google/export`,
+        method: "POST",
+        query: query,
         format: "json",
         ...params,
       }),

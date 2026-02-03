@@ -1,9 +1,11 @@
 using HtmlAgilityPack;
 using backend.Dtos;
+using backend.Enums;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Text.Json.Nodes;
+using System.Globalization;
 
 namespace backend.Services
 {
@@ -15,6 +17,7 @@ namespace backend.Services
         private const string BASE_URL = "https://aulavirtual.ual.es";
         private const string LOGIN_PATH = "/webapps/login/";
         private const string API_ME_URL = "/learn/api/public/v1/users/me";
+        private const string API_CALENDAR_ITEMS_URL = "/learn/api/public/v1/calendars/items";
 
         /// <summary>
         /// Authenticates a user with Blackboard credentials.
@@ -205,6 +208,144 @@ namespace backend.Services
                 var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
                 return response;
             }
+        }
+
+        /// <summary>
+        /// Retrieves and maps calendar items from Blackboard within a 16-week window starting at the first day of the month for the provided date.
+        /// </summary>
+        /// <param name="currentDate">Reference date to compute the window.</param>
+        /// <param name="sessionCookie">Blackboard session cookie.</param>
+        /// <returns>Mapped calendar items.</returns>
+        public async Task<IEnumerable<CalendarItemDto>> GetCalendarItemsAsync(DateTime currentDate, string sessionCookie)
+        {
+            if (string.IsNullOrWhiteSpace(sessionCookie))
+            {
+                throw new ArgumentException("Session cookie is required", nameof(sessionCookie));
+            }
+
+            var startDate = new DateTime(currentDate.Year, currentDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+            var endDate = startDate.AddDays(7 * 16 - 1);
+
+            var since = FormatUtcDate(startDate);
+            var until = FormatUtcDate(endDate);
+
+            var handler = new HttpClientHandler
+            {
+                UseCookies = false,
+                AllowAutoRedirect = false,
+                SslProtocols = System.Security.Authentication.SslProtocols.Tls12
+            };
+
+            using (var client = new HttpClient(handler))
+            {
+                client.BaseAddress = new Uri(BASE_URL);
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+                client.DefaultRequestHeaders.Add("Accept", "*/*");
+                client.DefaultRequestHeaders.ExpectContinue = false;
+
+                var request = new HttpRequestMessage(HttpMethod.Get, $"{API_CALENDAR_ITEMS_URL}?since={since}&until={until}&sort=start");
+                request.Headers.Add("Cookie", NormalizeCookie(sessionCookie));
+
+                var response = await client.SendAsync(request);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new HttpRequestException($"Blackboard calendar API returned {(int)response.StatusCode}", null, response.StatusCode);
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+                var root = JsonNode.Parse(json);
+                var results = root?["results"] as JsonArray;
+                if (results is null)
+                {
+                    return Enumerable.Empty<CalendarItemDto>();
+                }
+
+                var mapped = new List<CalendarItemDto>();
+                foreach (var item in results)
+                {
+                    if (item is not JsonObject obj)
+                    {
+                        continue;
+                    }
+
+                    var type = obj["type"]?.ToString() ?? string.Empty;
+                    var startString = obj["start"]?.ToString();
+                    var endString = obj["end"]?.ToString();
+
+                    if (!TryParseDate(startString, out var start) || !TryParseDate(endString, out var end))
+                    {
+                        continue;
+                    }
+
+                    var subject = string.Empty;
+                    if (!IsCategoryWithoutSubject(type))
+                    {
+                        var calendarName = obj["calendarName"]?.ToString() ?? string.Empty;
+                        subject = ExtractSubject(calendarName);
+                    }
+
+                    mapped.Add(new CalendarItemDto
+                    {
+                        CalendarId = obj["id"]?.ToString() ?? string.Empty,
+                        Title = obj["title"]?.ToString() ?? string.Empty,
+                        Start = start,
+                        End = end,
+                        Location = obj["location"]?.ToString() ?? string.Empty,
+                        Category = ParseCalendarCategory(type),
+                        Subject = subject,
+                        Color = obj["color"]?.ToString() ?? string.Empty,
+                        Description = obj["description"]?.ToString()
+                    });
+                }
+
+                return mapped;
+            }
+        }
+
+        private static string NormalizeCookie(string sessionCookie)
+        {
+            return sessionCookie.Contains("=") ? sessionCookie : $"bb_session={sessionCookie}";
+        }
+
+        private static string FormatUtcDate(DateTime date)
+        {
+            return date.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture);
+        }
+
+        private static bool TryParseDate(string? raw, out DateTime value)
+        {
+            return DateTime.TryParse(raw, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out value);
+        }
+
+        private static bool IsCategoryWithoutSubject(string category)
+        {
+            return category.Equals("Institution", StringComparison.OrdinalIgnoreCase)
+                   || category.Equals("Personal", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string ExtractSubject(string calendarName)
+        {
+            var match = Regex.Match(calendarName, " - (?<subject>[^-]+?) - ", RegexOptions.Compiled);
+            return match.Success ? match.Groups["subject"].Value.Trim() : string.Empty;
+        }
+
+        private static CalendarCategory ParseCalendarCategory(string categoryString)
+        {
+            if (string.IsNullOrWhiteSpace(categoryString))
+            {
+                return CalendarCategory.Course; // Default fallback
+            }
+
+            // Try case-insensitive parsing
+            if (Enum.TryParse<CalendarCategory>(categoryString, ignoreCase: true, out var result))
+            {
+                return result;
+            }
+
+            // Log warning for unrecognized category and default to Course
+            System.Diagnostics.Debug.WriteLine($"Warning: Unrecognized calendar category '{categoryString}', defaulting to Course");
+            return CalendarCategory.Course;
         }
     }
 }
