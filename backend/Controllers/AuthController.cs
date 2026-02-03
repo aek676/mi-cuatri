@@ -41,7 +41,22 @@ namespace backend.Controllers
 
             if (result.IsSuccess)
             {
-                await _userRepository.UpsertByUsernameAsync(request.Username);
+                // Try to fetch additional user data (email) and persist it for later correlation
+                string? email = null;
+                try
+                {
+                    var userDataResult = await _blackboardService.GetUserDataAsync(result.SessionCookie);
+                    if (userDataResult.IsSuccess)
+                    {
+                        email = userDataResult.UserData?.Email;
+                    }
+                }
+                catch
+                {
+                    // Ignore failures here; login succeeded and we still persist username
+                }
+
+                await _userRepository.UpsertByUsernameAsync(request.Username, email);
                 return Ok(result);
             }
             else

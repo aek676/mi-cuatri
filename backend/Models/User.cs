@@ -22,5 +22,17 @@ namespace backend.Models
         /// </summary>
         [BsonElement("username")]
         public required string Username { get; set; }
+
+        /// <summary>
+        /// Optional Blackboard email (queried after login) to help correlate sessions.
+        /// </summary>
+        [BsonElement("email")]
+        public string? Email { get; set; }
+
+        /// <summary>
+        /// Optional linked Google account data (tokens, ids, scopes).
+        /// </summary>
+        [BsonElement("googleAccount")]
+        public GoogleAccount? GoogleAccount { get; set; }
     }
 }

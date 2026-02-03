@@ -1,11 +1,10 @@
 using System.Reflection;
-using System.IO;
 using backend.Repositories;
 using backend.Services;
 using DotNetEnv;
 using System.Text.Json.Serialization;
 
-DotNetEnv.Env.Load();
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,7 +27,12 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IBlackboardService, BlackboardService>();
+builder.Services.AddScoped<IGoogleCalendarService, GoogleCalendarService>();
 builder.Services.AddScoped<backend.Data.MongoDbContext>();
+
+builder.Services.AddDataProtection();
+builder.Services.AddSingleton<ITokenProtector, TokenProtector>();
+
 builder.Services.AddCors();
 
 var app = builder.Build();
