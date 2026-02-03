@@ -20,6 +20,12 @@ namespace backend.Services
         private readonly string _clientSecret;
         private const string TokenEndpoint = "https://oauth2.googleapis.com/token";
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GoogleCalendarService"/> class.
+        /// </summary>
+        /// <param name="userRepository">User repository for reading and storing Google account information.</param>
+        /// <param name="configuration">Application configuration to obtain Google OAuth settings.</param>
+        /// <param name="logger">Logger instance for diagnostic logging.</param>
         public GoogleCalendarService(IUserRepository userRepository, IConfiguration configuration, ILogger<GoogleCalendarService> logger)
         {
             _userRepository = userRepository;
@@ -28,6 +34,13 @@ namespace backend.Services
             _clientSecret = configuration["Google:ClientSecret"] ?? Environment.GetEnvironmentVariable("Google__ClientSecret") ?? string.Empty;
         }
 
+        /// <summary>
+        /// Exports the specified calendar items to the user's Google Calendar.
+        /// Returns a summary with counts of created, updated and failed events.
+        /// </summary>
+        /// <param name="username">Local username to export events for.</param>
+        /// <param name="items">Collection of <see cref="CalendarItemDto"/> items to export.</param>
+        /// <returns>An <see cref="ExportSummaryDto"/> summarizing the export operation.</returns>
         public async Task<ExportSummaryDto> ExportEventsAsync(string username, IEnumerable<CalendarItemDto> items)
         {
             var summary = new ExportSummaryDto { Created = 0, Updated = 0, Failed = 0, Errors = new List<string>() };
@@ -210,8 +223,10 @@ namespace backend.Services
         }
 
         /// <summary>
-        /// Ensures a valid access token is available, refreshing if necessary.
+        /// Ensures a valid access token is available for the given user, refreshing if necessary.
+        /// Throws <see cref="InvalidOperationException"/> if a refresh fails or no token can be obtained.
         /// </summary>
+        /// <param name="user">User whose Google account should be used to obtain a token.</param>
         private async Task<string> EnsureAccessTokenAsync(User user)
         {
             var account = user.GoogleAccount ?? throw new InvalidOperationException("No Google account available");
