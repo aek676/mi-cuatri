@@ -7,19 +7,22 @@ import '@/styles/global.css';
 const sessionToken = Astro.cookies.get('bb_session')?.value;
 
 let events: CalendarItemDto[] = [];
-if (sessionToken) {
-  try {
-    const { data } = await api.api.calendarList(
-      { currentDate: new Date().toISOString() },
-      { headers: { 'X-Session-Cookie': sessionToken } },
-    );
 
-    if (data) {
-      events = data;
-    }
-  } catch (error) {
-    console.error('Error validating session:', error);
+if (!sessionToken) {
+  return Astro.redirect('/login');
+}
+
+try {
+  const { data } = await api.api.calendarList(
+    { currentDate: new Date().toISOString() },
+    { headers: { 'X-Session-Cookie': sessionToken } },
+  );
+
+  if (data) {
+    events = data;
   }
+} catch (error) {
+  console.error('Error validating session:', error);
 }
 ---
 

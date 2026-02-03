@@ -11,25 +11,24 @@ if (logoutResult && !logoutResult.error) {
 }
 
 const sessionToken = Astro.cookies.get('bb_session')?.value;
-let user = null;
-
-if (sessionToken) {
-  try {
-    const { data } = await api.api.authMeList({
-      headers: {
-        'X-Session-Cookie': sessionToken,
-      },
-    });
-
-    if (data?.isSuccess) {
-      user = data.userData;
-    }
-  } catch (error) {
-    console.error('Error validating session:', error);
-  }
+if (!sessionToken) {
+  return Astro.redirect('/login');
 }
 
-if (!user) {
+let user;
+
+try {
+  const { data } = await api.api.authMeList({
+    headers: { 'X-Session-Cookie': sessionToken },
+  });
+
+  if (!data?.isSuccess || !data.userData) {
+    throw new Error('Invalid user data');
+  }
+
+  user = data.userData;
+} catch (error) {
+  console.error('Session validation failed:', error);
   return Astro.redirect('/login');
 }
 ---
@@ -37,7 +36,6 @@ if (!user) {
 <Layout>
   <div class="flex-1 flex flex-col p-6 overflow-y-auto">
     <ProfileComponent user={user} sessionToken={sessionToken} />
-
     <Logout />
   </div>
 </Layout>
