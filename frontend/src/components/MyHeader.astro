@@ -1,0 +1,26 @@
+---
+import LogoUal from '@/assets/img/Logo-UAL.png';
+import Button from '@/components/ui/button/button.astro';
+import { Header, HeaderActions, HeaderContent } from '@/components/ui/header';
+import { Logo, LogoImage, LogoText } from '@/components/ui/logo';
+import { Icon } from 'astro-icon/components';
+---
+
+<Header variant="floating">
+  <HeaderContent>
+    <Logo href="/ultra/calendar">
+      <LogoImage src={LogoUal} alt="Logo UAL" loading="eager" />
+      <LogoText>Mi Cuatri</LogoText>
+    </Logo>
+    <HeaderActions class="ml-auto">
+      <Button
+        variant="outline"
+        size="icon"
+        aria-label="User Account"
+        href={'/ultra/profile'}
+      >
+        <Icon name="mdi:account-cowboy-hat-outline" />
+      </Button>
+    </HeaderActions>
+  </HeaderContent>
+</Header>

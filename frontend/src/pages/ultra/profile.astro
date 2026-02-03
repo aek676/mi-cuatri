@@ -1,7 +1,7 @@
 ---
 import Logout from '@/components/Logout.astro';
 import ProfileComponent from '@/components/Profile.astro';
-import Layout from '@/layouts/Layout.astro';
+import AppLayout from '@/layouts/AppLayout.astro';
 import { api } from '@/lib/apiClient';
 import { actions } from 'astro:actions';
 
@@ -33,9 +33,9 @@ try {
 }
 ---
 
-<Layout>
+<AppLayout>
   <div class="flex-1 flex flex-col p-6 overflow-y-auto">
     <ProfileComponent user={user} sessionToken={sessionToken} />
     <Logout />
   </div>
-</Layout>
+</AppLayout>
