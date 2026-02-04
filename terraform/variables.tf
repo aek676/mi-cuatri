@@ -9,3 +9,9 @@ variable "location" {
   type        = string
   description = "Location of Azure resources"
 }
+
+variable "mongo_connection_string" {
+  type        = string
+  sensitive   = true
+  description = "Connection string for MongoDB Atlas"
+}
