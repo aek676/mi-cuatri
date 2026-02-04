@@ -21,7 +21,6 @@ if (!string.IsNullOrEmpty(googleRedirectUri))
 }
 else
 {
-    // Fallback to default development redirect URI
     builder.Configuration["Google:RedirectUri"] = "http://localhost:5042/api/auth/google/callback";
 }
 
