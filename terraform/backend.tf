@@ -1,7 +1,7 @@
 terraform {
   cloud {
 
-    organization = "mi-cuatri"
+    organization = "aek676"
 
     workspaces {
       name = "mi-cuatri"
