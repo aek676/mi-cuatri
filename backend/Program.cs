@@ -14,7 +14,6 @@ if (string.IsNullOrEmpty(connetionString))
     throw new Exception("Connection string not found. Ensure the .env file is correctly configured and placed in the root directory.");
 }
 
-// Configure Google OAuth redirect URI based on environment
 var googleRedirectUri = Environment.GetEnvironmentVariable("Google__RedirectUri");
 if (!string.IsNullOrEmpty(googleRedirectUri))
 {
