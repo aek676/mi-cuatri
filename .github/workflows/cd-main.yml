@@ -1,0 +1,34 @@
+name: Main Deploy Orchestrator
+
+on:
+  push:
+    branches: ["main"]
+    paths: ["frontend/**", "backend/**"]
+  workflow_dispatch:
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            frontend: 'frontend/**'
+            backend: 'backend/**'
+
+  deploy-frontend:
+    needs: changes
+    if: ${{ needs.changes.outputs.frontend == 'true' || github.event_name == 'workflow_dispatch' }}
+    uses: ./.github/workflows/reusable-deploy-frontend.yml
+    secrets: inherit
+
+  deploy-backend:
+    needs: changes
+    if: ${{ needs.changes.outputs.backend == 'true' || github.event_name == 'workflow_dispatch' }}
+    uses: ./.github/workflows/reusable-deploy-backend.yml
+    secrets: inherit
