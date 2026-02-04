@@ -17,7 +17,6 @@ if (string.IsNullOrEmpty(connetionString))
 var googleRedirectUri = Environment.GetEnvironmentVariable("Google__RedirectUri");
 if (!string.IsNullOrEmpty(googleRedirectUri))
 {
-    // If explicitly set via environment variable, use that
     builder.Configuration["Google:RedirectUri"] = googleRedirectUri;
 }
 else
