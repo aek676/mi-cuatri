@@ -37,4 +37,4 @@ jobs:
           containerAppName: micuatri-backend
           resourceGroup: mi-cuatri-rg
           environmentVariables: |
-            "Google__ClientId='${{ secrets.GOOGLE_CLIENT_ID }}" "Google__ClientSecret=${{ secrets.GOOGLE_CLIENT_SECRET }}" "Google__RedirectUri=${{ secrets.GOOGLE_REDIRECT_URI }}" "ConnectionStrings__MongoDB=${{ secrets.MONGO_CONN_STRING }}"
+            "Google__ClientId=${{ secrets.GOOGLE_CLIENT_ID }}" "Google__ClientSecret=${{ secrets.GOOGLE_CLIENT_SECRET }}" "Google__RedirectUri=${{ secrets.GOOGLE_REDIRECT_URI }}" "ConnectionStrings__MongoDB=${{ secrets.MONGO_CONN_STRING }}"
