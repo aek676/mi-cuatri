@@ -1,7 +1,7 @@
 resource "azurerm_log_analytics_workspace" "micuatrilaw" {
   name                = "micuatri-law"
-  resource_group_name = azurerm_resource_group.mi-cuatri.name
   location            = azurerm_resource_group.mi-cuatri.location
+  resource_group_name = azurerm_resource_group.mi-cuatri.name
   sku                 = "PerGB2018"
   retention_in_days   = 30
 }
@@ -19,30 +19,41 @@ resource "azurerm_container_app" "micuatribackend" {
   resource_group_name          = azurerm_resource_group.mi-cuatri.name
   revision_mode                = "Single"
 
-  secret {
-    name  = "mongo-conn"
-    value = var.mongo_connection_string
-  }
-
   template {
     container {
-      name   = "mi-cuatri-backend"
-      image  = "aek676/mi-cuatri-backend:latest"
+      name   = "micuatri-backend"
+      image  = "gcr.io/google-samples/hello-app:1.0"
       cpu    = 0.5
       memory = "1.0Gi"
 
       env {
-        name        = "ConnectionStrings__MongoDb"
-        secret_name = "mongo-conn"
+        name  = "ConnectionStrings__MongoDB"
+        value = var.mongodb_connection_string
+      }
+
+      env {
+        name  = "Google__ClientId"
+        value = var.google_client_id
+      }
+      env {
+        name  = "Google__ClientSecret"
+        value = var.google_client_secret
+      }
+      env {
+        name  = "Google__RedirectUri"
+        value = var.google_redirect_uri
       }
     }
+
+
   }
 
   ingress {
     allow_insecure_connections = false
-    external_enabled           = false # <--- IMPORTANTE: False = Solo interno
-    target_port                = 8080  # Puerto donde escucha tu .NET (revisa tu Dockerfile)
+    external_enabled           = false
+    target_port                = 8080
     transport                  = "http"
+
     traffic_weight {
       percentage      = 100
       latest_revision = true
@@ -51,31 +62,28 @@ resource "azurerm_container_app" "micuatribackend" {
 
   lifecycle {
     ignore_changes = [
-      template[0].container[0].image
+      template[0].container[0].image,
+      template[0].container[0].env,
+      secret
     ]
   }
 }
 
-# --- 3. FRONTEND (Astro) ---
-
 resource "azurerm_container_app" "micuatriapp" {
-  name                         = "micuatri-frontend" # Le cambié el nombre para ser más explícito
+  name                         = "micuatri-frontend"
   container_app_environment_id = azurerm_container_app_environment.micuatrienv.id
   resource_group_name          = azurerm_resource_group.mi-cuatri.name
   revision_mode                = "Single"
 
   template {
     container {
-      name   = "mi-cuatri-frontend"
-      image  = "aek676/mi-cuatri-frontend:latest"
+      name   = "micuatri-frontend"
+      image  = "mcr.microsoft.com/azuredocs/containerapps-helloworld:latest"
       cpu    = 0.25
       memory = "0.5Gi"
 
-      # AQUÍ ESTÁ LA MAGIA: Conectamos el frontend con el backend
       env {
-        name = "INTERNAL_API_BASE_URL"
-        # Terraform lee la URL del backend que acabamos de crear y la inyecta aquí.
-        # "https://" es necesario porque Container Apps usa TLS internamente.
+        name  = "INTERNAL_API_BASE_URL"
         value = "https://${azurerm_container_app.micuatribackend.ingress[0].fqdn}"
       }
 
@@ -93,8 +101,9 @@ resource "azurerm_container_app" "micuatriapp" {
 
   ingress {
     allow_insecure_connections = false
-    external_enabled           = true # <--- True = Público
+    external_enabled           = true
     target_port                = 4321
+
     traffic_weight {
       percentage      = 100
       latest_revision = true
@@ -103,12 +112,10 @@ resource "azurerm_container_app" "micuatriapp" {
 
   lifecycle {
     ignore_changes = [
-      template[0].container[0].image
+      template[0].container[0].image,
+      template[0].container[0].env
     ]
   }
 }
 
-# Output para que sepas dónde entrar
-output "frontend_url" {
-  value = azurerm_container_app.micuatriapp.ingress[0].fqdn
-}
+

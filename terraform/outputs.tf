@@ -1,4 +1,7 @@
-output "container_app_url" {
-  description = "The URL of the Azure Container App"
-  value       = "https://${azurerm_container_app.micuatriapp.ingress[0].fqdn}"
+output "frontend_url" {
+  value = "https://${azurerm_container_app.micuatriapp.ingress[0].fqdn}"
+}
+
+output "backend_internal_url" {
+  value = "https://${azurerm_container_app.micuatribackend.ingress[0].fqdn}"
 }
