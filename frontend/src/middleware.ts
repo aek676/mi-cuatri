@@ -3,11 +3,11 @@ import { createApiClient } from '@/lib/apiClient';
 
 const isPublicPath = (pathname: string) => {
   return (
-    pathname === '/login' ||
     pathname.startsWith('/_astro') ||
     pathname.startsWith('/_actions') ||
     pathname.startsWith('/assets') ||
-    pathname.startsWith('/favicon')
+    pathname.startsWith('/favicon') ||
+    pathname.startsWith('/api/')
   );
 };
 
@@ -27,6 +27,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return next();
   }
 
+  if (pathname === '/login' && !sessionToken) {
+    return next();
+  }
+
+  if (pathname === '/') {
+    return Response.redirect(new URL('/ultra/calendar', request.url), 302);
+  }
+
   if (!sessionToken) {
     return redirectToLogin(request.url);
   }
@@ -40,6 +48,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
 
     locals.user = response.data.userData;
+
+    if (pathname === '/login') {
+      return Response.redirect(new URL('/ultra/calendar', request.url), 302);
+    }
+
     return next();
   } catch (error) {
     console.error('[Middleware] Session validation failed:', error);

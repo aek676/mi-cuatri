@@ -3,19 +3,13 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* 1. DEFINICIÓN DE TEMA
-  Aquí definimos tus colores personalizados y mapeamos las variables 
-  de Shadcn a las clases de utilidad de Tailwind.
-*/
 @theme {
-  /* Tu paleta de marca */
   --color-brand-dark: #1C3A5B;
   --color-brand-main: #315F94;
   --color-brand-light: #6B9AC4;
   --color-brand-pale: #D6E4F0;
   --color-brand-white: #FFFFFF;
 
-  /* Mapeo de Shadcn (Sistema) */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   
@@ -38,7 +32,7 @@
   --color-accent-foreground: var(--accent-foreground);
   
   --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground); /* Agregado para integridad */
+  --color-destructive-foreground: var(--destructive-foreground);
   
   --color-border: var(--border);
   --color-input: var(--input);
@@ -59,7 +53,6 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Radios de borde */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -69,53 +62,41 @@
   --radius-4xl: calc(var(--radius) + 16px);
 }
 
-/* 2. VALORES DE LAS VARIABLES CSS
-  He conectado tus colores HEX a las variables semánticas de Shadcn.
-  Esto hace que el componente <Button> use tu azul automáticamente.
-*/
 :root {
   --radius: 0.625rem;
 
-  /* Fondo y Texto Base (Usando tus Brand Colors) */
-  --background: #FFFFFF; /* brand-white */
-  --foreground: #1C3A5B; /* brand-dark */
+  --background: #FFFFFF; 
+  --foreground: #1C3A5B; 
 
-  /* Tarjetas y Popups */
   --card: #FFFFFF;
   --card-foreground: #1C3A5B;
   --popover: #FFFFFF;
   --popover-foreground: #1C3A5B;
 
-  /* PRIMARIO: Usamos tu Brand Main */
   --primary: #315F94; 
   --primary-foreground: #FFFFFF;
 
-  /* SECUNDARIO: Usamos tu Brand Pale (o Light) */
   --secondary: #D6E4F0;
   --secondary-foreground: #1C3A5B;
 
-  /* ACENTOS y MUTED */
-  --muted: #F1F5F9; /* Un gris muy suave neutral */
+  --muted: #F1F5F9; 
   --muted-foreground: #64748B;
-  --accent: #D6E4F0; /* Coincide con secondary o pale */
+  --accent: #D6E4F0; 
   --accent-foreground: #1C3A5B;
 
-  /* OTROS */
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
   
-  --border: #E2E8F0; /* Gris suave para bordes */
+  --border: #E2E8F0; 
   --input: #E2E8F0;
-  --ring: #315F94; /* El anillo de foco usa tu color principal */
+  --ring: #315F94; 
 
-  /* Gráficos */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
 
-  /* Sidebar */
   --sidebar: #FFFFFF;
   --sidebar-foreground: #1C3A5B;
   --sidebar-primary: #315F94;
@@ -126,11 +107,8 @@
   --sidebar-ring: #315F94;
 }
 
-/* 3. DARK MODE
-  Ajustado para que se vea bien en oscuro si lo usas.
-*/
 .dark {
-  --background: #0F172A; /* Slate 900 o tu Brand Dark más oscuro */
+  --background: #0F172A; 
   --foreground: #F8FAFC;
 
   --card: #1E293B;
@@ -138,10 +116,10 @@
   --popover: #1E293B;
   --popover-foreground: #F8FAFC;
 
-  --primary: #6B9AC4; /* Brand Light para que resalte en oscuro */
+  --primary: #6B9AC4; 
   --primary-foreground: #FFFFFF;
 
-  --secondary: #1C3A5B; /* Brand Dark como secundario */
+  --secondary: #1C3A5B; 
   --secondary-foreground: #FFFFFF;
 
   --muted: #1E293B;
@@ -172,9 +150,6 @@
   --sidebar-ring: #6B9AC4;
 }
 
-/* 4. ESTILOS BASE
-  Esto aplica los colores al body automáticamente usando las variables de arriba.
-*/
 @layer base {
   *,
   ::after,

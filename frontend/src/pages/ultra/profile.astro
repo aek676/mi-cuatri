@@ -18,8 +18,7 @@ if (!sessionToken || !user) {
 ---
 
 <AppLayout>
-  <div class="flex-1 flex flex-col p-6 overflow-y-auto">
-    <ProfileComponent user={user} sessionToken={sessionToken} />
+  <ProfileComponent user={user} sessionToken={sessionToken}>
     <Logout />
-  </div>
+  </ProfileComponent>
 </AppLayout>

@@ -10,8 +10,21 @@ variable "location" {
   description = "Location of Azure resources"
 }
 
-variable "mongo_connection_string" {
-  type        = string
-  sensitive   = true
-  description = "Connection string for MongoDB Atlas"
+variable "mongodb_connection_string" {
+  type      = string
+  sensitive = true
+}
+
+variable "google_client_id" {
+  type      = string
+  sensitive = true
+}
+
+variable "google_client_secret" {
+  type      = string
+  sensitive = true
+}
+
+variable "google_redirect_uri" {
+  type = string
 }
