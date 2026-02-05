@@ -5,18 +5,18 @@ import { actions } from 'astro:actions';
 const result = Astro.getActionResult(actions.logout);
 ---
 
-<div class="p-4 space-y-2">
+<div class="text-center">
   <form method="post" action={actions.logout}>
     <button
       type="submit"
-      class="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-rose-600 rounded-md hover:bg-rose-50 transition-colors"
+      class="px-12 py-4 rounded-full inline-flex items-center gap-3 text-lg font-bold border-2 border-rose-600 text-rose-600 hover:bg-rose-600 hover:text-white hover:shadow-lg transition-all"
     >
-      <Icon name="mdi:logout" class="w-5 h-5" />
-      Log Out
+      <Icon name="mdi:logout" class="w-6 h-6" />
+      Log out
     </button>
   </form>
 
   {result?.error && (
-    <p class="text-red-600 text-sm mt-1">Error logging out</p>
+    <p class="text-red-600 text-sm mt-2">Error logging out</p>
   )}
 </div>
