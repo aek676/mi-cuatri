@@ -14,16 +14,6 @@ if (string.IsNullOrEmpty(connetionString))
     throw new Exception("Connection string not found. Ensure the .env file is correctly configured and placed in the root directory.");
 }
 
-var googleRedirectUri = Environment.GetEnvironmentVariable("Google__RedirectUri");
-if (!string.IsNullOrEmpty(googleRedirectUri))
-{
-    builder.Configuration["Google:RedirectUri"] = googleRedirectUri;
-}
-else
-{
-    builder.Configuration["Google:RedirectUri"] = "http://localhost:5042/api/auth/google/callback";
-}
-
 builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
