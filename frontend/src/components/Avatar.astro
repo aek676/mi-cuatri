@@ -7,12 +7,14 @@ const {
   size = 100,
   alt = 'Avatar',
   className = '',
+  showSkeleton = true,
 } = Astro.props as {
   avatarUrl: string;
   sessionToken?: string;
   size?: number;
   alt?: string;
   className?: string;
+  showSkeleton?: boolean;
 };
 
 let imageSrc: string | null = null;
@@ -35,47 +37,27 @@ if (avatarUrl && sessionToken) {
   }
 }
 
-const getInitials = (name: string): string => {
-  const words = name.trim().split(/\s+/);
-  if (words.length >= 2) {
-    return (words[0][0] + words[words.length - 1][0]).toUpperCase();
-  }
-  return name.substring(0, 2).toUpperCase();
-};
+const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(alt)}&size=256&background=6B9AC4&color=fff`;
 ---
 
-(
-<figure
-  class={`relative ${className}`}
-  style={`width: ${size}px; height: ${size}px;`}
-  aria-busy={imageSrc ? 'true' : 'false'}
->
-  {
-    imageSrc ? (
-      <>
-        <img
-          src={imageSrc}
-          alt={alt}
-          loading="lazy"
-          decoding="async"
-          class="rounded-full object-cover opacity-0 transition-opacity duration-200"
-          style={`width: ${size}px; height: ${size}px;`}
-          onload="this.parentElement.setAttribute('aria-busy','false'); this.classList.remove('opacity-0'); this.parentElement.querySelector('.avatar-skeleton')?.classList.add('hidden');"
-        />
-        <div
-          class="absolute inset-0 rounded-full bg-gray-200 dark:bg-gray-700/30 animate-pulse avatar-skeleton"
-          aria-hidden="true"
-        />
-      </>
-    ) : (
-      <div
-        class="bg-linear-to-br from-gray-400 to-gray-600 text-white rounded-full flex items-center justify-center font-semibold"
-        style={`font-size: ${size / 2.5}px;`}
-        aria-hidden="false"
-      >
-        {getInitials(alt)}
-      </div>
-    )
-  }
-</figure>
-)
+{
+  imageSrc ? (
+    <img
+      src={imageSrc}
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+      class={`rounded-full object-cover ${className}`}
+      style={`width: ${size}px; height: ${size}px;`}
+    />
+  ) : (
+    <img
+      src={fallbackUrl}
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+      class={`rounded-full object-cover ${className}`}
+      style={`width: ${size}px; height: ${size}px;`}
+    />
+  )
+}
