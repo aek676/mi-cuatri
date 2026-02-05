@@ -6,20 +6,15 @@ import { Logo, LogoImage, LogoText } from '@/components/ui/logo';
 import { Icon } from 'astro-icon/components';
 ---
 
-<Header variant="floating">
+<Header variant="floating" class="mb-2">
   <HeaderContent>
     <Logo href="/ultra/calendar">
       <LogoImage src={LogoUal} alt="Logo UAL" loading="eager" />
       <LogoText>Mi Cuatri</LogoText>
     </Logo>
     <HeaderActions class="ml-auto">
-      <Button
-        variant="outline"
-        size="icon"
-        aria-label="User Account"
-        href={'/ultra/profile'}
-      >
-        <Icon name="mdi:account-cowboy-hat-outline" />
+      <Button variant="ghost" aria-label="User Account" href={'/ultra/profile'}>
+        <Icon name="mdi:account-cowboy-hat-outline" class="size-6" />
       </Button>
     </HeaderActions>
   </HeaderContent>
