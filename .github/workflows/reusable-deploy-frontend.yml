@@ -37,4 +37,4 @@ jobs:
           containerAppName: micuatri-frontend
           resourceGroup: mi-cuatri-rg
           environmentVariables: |
-            INTERNAL_API_BASE_URL=${{ secrets.INTERNAL_API_BASE_URL }}
+            "INTERNAL_API_BASE_URL=${{ secrets.INTERNAL_API_BASE_URL }}"
