@@ -1,6 +1,7 @@
 using MongoDB.Driver;
 using backend.Data;
 using backend.Models;
+using backend.Services;
 
 namespace backend.Repositories
 {
@@ -11,14 +12,14 @@ namespace backend.Repositories
     {
         private readonly MongoDbContext _context;
 
-        private readonly backend.Services.ITokenProtector _protector;
+        private readonly ITokenProtector _protector;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UserRepository"/> class and ensures the username index.
         /// </summary>
         /// <param name="context">The MongoDB context.</param>
         /// <param name="protector">Token protector for encrypting/decrypting stored Google tokens.</param>
-        public UserRepository(MongoDbContext context, backend.Services.ITokenProtector protector)
+        public UserRepository(MongoDbContext context, ITokenProtector protector)
         {
             _context = context;
             _protector = protector;
@@ -35,7 +36,7 @@ namespace backend.Repositories
         /// </summary>
         /// <param name="username">The username to upsert.</param>
         /// <param name="email">Optional email to associate with the username (from Blackboard).</param>
-        public Task UpsertByUsernameAsync(string username, string? email = null) 
+        public Task UpsertByUsernameAsync(string username, string? email = null)
         {
             var filter = Builders<User>.Filter.Eq(u => u.Username, username);
             var update = Builders<User>.Update.Set(u => u.Username, username);
@@ -52,7 +53,7 @@ namespace backend.Repositories
         /// </summary>
         /// <param name="username">Username to find.</param>
         /// <returns>User document or null if not found.</returns>
-        public async Task<User?> GetByUsernameAsync(string username) 
+        public async Task<User?> GetByUsernameAsync(string username)
         {
             var filter = Builders<User>.Filter.Eq(u => u.Username, username);
             var user = await _context.Users.Find(filter).FirstOrDefaultAsync();
@@ -69,7 +70,7 @@ namespace backend.Repositories
         /// </summary>
         /// <param name="email">Email address to look up.</param>
         /// <returns>User document or null if not found.</returns>
-        public async Task<User?> GetByEmailAsync(string email) 
+        public async Task<User?> GetByEmailAsync(string email)
         {
             var filter = Builders<User>.Filter.Eq(u => u.Email, email);
             var user = await _context.Users.Find(filter).FirstOrDefaultAsync();
@@ -86,17 +87,24 @@ namespace backend.Repositories
         /// </summary>
         /// <param name="username">Username whose Google account will be set.</param>
         /// <param name="account">GoogleAccount object to persist (tokens are protected before saving).</param>
-        public Task UpsertGoogleAccountAsync(string username, GoogleAccount account) 
+        public Task UpsertGoogleAccountAsync(string username, GoogleAccount account)
         {
-            // Protect tokens before persisting
+            GoogleAccount accountToSave = account;
             if (account != null)
             {
-                account.RefreshToken = _protector.Protect(account.RefreshToken);
-                account.AccessToken = _protector.Protect(account.AccessToken);
+                accountToSave = new GoogleAccount
+                {
+                    GoogleId = account.GoogleId,
+                    Email = account.Email,
+                    RefreshToken = _protector.Protect(account.RefreshToken),
+                    AccessToken = _protector.Protect(account.AccessToken),
+                    AccessTokenExpiry = account.AccessTokenExpiry,
+                    Scopes = account.Scopes
+                };
             }
 
             var filter = Builders<User>.Filter.Eq(u => u.Username, username);
-            var update = Builders<User>.Update.Set(u => u.GoogleAccount, account);
+            var update = Builders<User>.Update.Set(u => u.GoogleAccount, accountToSave);
             var options = new UpdateOptions { IsUpsert = false };
             return _context.Users.UpdateOneAsync(filter, update, options);
         }
@@ -105,7 +113,7 @@ namespace backend.Repositories
         /// Removes the Google account linkage for a user.
         /// </summary>
         /// <param name="username">Username to remove the Google account for.</param>
-        public Task RemoveGoogleAccountAsync(string username) 
+        public Task RemoveGoogleAccountAsync(string username)
         {
             var filter = Builders<User>.Filter.Eq(u => u.Username, username);
             var update = Builders<User>.Update.Unset(u => u.GoogleAccount);
