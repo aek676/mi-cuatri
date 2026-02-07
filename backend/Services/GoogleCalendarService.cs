@@ -235,12 +235,17 @@ namespace backend.Services
                 account.AccessTokenExpiry.HasValue &&
                 account.AccessTokenExpiry.Value > DateTime.UtcNow.AddMinutes(1))
             {
+                _logger.LogDebug("Using cached access token for user {Username}, expires at {ExpiresAt}",
+                    user.Username, account.AccessTokenExpiry?.ToString("O") ?? "unknown");
                 return account.AccessToken;
             }
 
+            _logger.LogInformation("Access token expired or missing for user {Username}. Token expiry: {ExpiresAt}. Attempting refresh...",
+                user.Username, account.AccessTokenExpiry?.ToString("O") ?? "unknown");
+
             if (string.IsNullOrEmpty(account.RefreshToken))
             {
-                throw new InvalidOperationException("Refresh token is not available for the user.");
+                throw new InvalidOperationException($"Refresh token is not available for user {user.Username}. Please reconnect your Google account.");
             }
 
             using var client = new HttpClient();
@@ -255,9 +260,19 @@ namespace backend.Services
             var resp = await client.PostAsync(TokenEndpoint, new FormUrlEncodedContent(body));
             if (!resp.IsSuccessStatusCode)
             {
-                var content = await resp.Content.ReadAsStringAsync();
-                _logger.LogError("Failed to refresh Google access token: {Status}", resp.StatusCode);
-                throw new InvalidOperationException("Failed to refresh Google access token");
+                var errorContent = await resp.Content.ReadAsStringAsync();
+                _logger.LogError("Failed to refresh Google access token for user {Username}. Status: {Status}. Response: {Response}",
+                    user.Username, resp.StatusCode, errorContent ?? "empty");
+
+                // Google may return 400 with "invalid_grant" if refresh token is expired
+                if (resp.StatusCode == System.Net.HttpStatusCode.BadRequest &&
+                    !string.IsNullOrEmpty(errorContent) &&
+                    errorContent.Contains("invalid_grant"))
+                {
+                    throw new InvalidOperationException($"Google refresh token has expired for user {user.Username}. Please reconnect your Google account.");
+                }
+
+                throw new InvalidOperationException($"Failed to refresh Google access token for user {user.Username}. Status code: {resp.StatusCode}");
             }
 
             var json = await resp.Content.ReadAsStringAsync();
@@ -266,8 +281,8 @@ namespace backend.Services
 
             if (!root.TryGetProperty("access_token", out var tokenProp))
             {
-                _logger.LogError("Token refresh response missing access_token");
-                throw new InvalidOperationException("No access token received from Google");
+                _logger.LogError("Token refresh response missing access_token for user {Username}", user.Username);
+                throw new InvalidOperationException("Invalid response from Google: no access token received.");
             }
 
             var newAccessToken = tokenProp.GetString();
@@ -276,7 +291,11 @@ namespace backend.Services
             account.AccessToken = newAccessToken;
             account.AccessTokenExpiry = DateTime.UtcNow.AddSeconds(expiresIn);
 
+            // Persist the updated tokens
             await _userRepository.UpsertGoogleAccountAsync(user.Username, account);
+
+            _logger.LogInformation("Successfully refreshed Google access token for user {Username}. New expiry: {ExpiresAt}",
+                user.Username, account.AccessTokenExpiry?.ToString("O") ?? "unknown");
 
             return account.AccessToken;
         }

@@ -11,10 +11,12 @@ import {
   Plus,
 } from 'lucide-react';
 import { useEffect, useReducer, useRef, useState } from 'react';
+import { FcGoogle } from 'react-icons/fc';
 import AddEventDialog from './calendar/AddEventDialog';
 import EventDialog from './calendar/EventDialog';
 import MobileList from './calendar/MobileList';
 import MonthGrid from './calendar/MonthGrid';
+
 type Props = {
   events?: CalendarEvent[];
 };
@@ -200,7 +202,10 @@ export function EventCalendar({ events = [] }: Props) {
                   <span className="hidden sm:inline">Export</span>
                 </>
               ) : (
-                <span className="hidden sm:inline">Connect</span>
+                <>
+                  <FcGoogle size={14} />
+                  <span className="hidden sm:inline">Connect</span>
+                </>
               )}
             </Button>
           </div>
