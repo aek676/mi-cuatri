@@ -59,6 +59,34 @@ export interface CalendarItemDto {
   description?: string | null;
 }
 
+/** Data transfer object for creating a new event. */
+export interface CreateEventDto {
+  /**
+   * The title of the event.
+   * @minLength 1
+   */
+  title: string;
+  /** Optional subject or course name. */
+  subject?: string | null;
+  /**
+   * The start date and time in UTC.
+   * @format date-time
+   */
+  start: string;
+  /**
+   * The end date and time in UTC.
+   * @format date-time
+   */
+  end: string;
+  /** Optional location of the event. */
+  location?: string | null;
+  /**
+   * The color code in hexadecimal format (e.g., #FF5733).
+   * @minLength 1
+   */
+  color: string;
+}
+
 /** Data transfer object for creating a new product. */
 export interface CreateProductDto {
   name?: string | null;
@@ -68,25 +96,82 @@ export interface CreateProductDto {
   quantity?: number;
 }
 
+/** Data transfer object for event responses. */
+export interface EventDto {
+  /**
+   * Gets the unique identifier of the event.
+   * @minLength 1
+   */
+  id: string;
+  /**
+   * Gets the title of the event.
+   * @minLength 1
+   */
+  title: string;
+  /** Gets the optional subject or course name associated with the event. */
+  subject?: string | null;
+  /**
+   * Gets the start date and time of the event in UTC.
+   * @format date-time
+   */
+  start: string;
+  /**
+   * Gets the end date and time of the event in UTC.
+   * @format date-time
+   */
+  end: string;
+  /** Gets the optional physical or virtual location of the event. */
+  location?: string | null;
+  /**
+   * Gets the hexadecimal color code for the event.
+   * @minLength 1
+   */
+  color: string;
+}
+
+/**
+ * Summary of an export operation to Google Calendar.
+ * Contains counts of created, updated and failed events and any error messages.
+ */
 export interface ExportSummaryDto {
-  /** @format int32 */
+  /**
+   * Number of events created in Google Calendar.
+   * @format int32
+   */
   created?: number;
-  /** @format int32 */
+  /**
+   * Number of events updated in Google Calendar.
+   * @format int32
+   */
   updated?: number;
-  /** @format int32 */
+  /**
+   * Number of events that failed to be exported.
+   * @format int32
+   */
   failed?: number;
+  /** List of error messages for failed items, if any. */
   errors?: string[] | null;
 }
 
+/** Response returned by the Google connect endpoint containing the authorization URL and state token. */
 export interface GoogleConnectResponse {
-  /** @format uri */
+  /**
+   * Authorization URL for the frontend to redirect the user to Google OAuth2 consent screen.
+   * @format uri
+   */
   url: string;
-  /** @minLength 1 */
+  /**
+   * State token that identifies the originating session for the OAuth flow.
+   * @minLength 1
+   */
   stateToken: string;
 }
 
+/** Represents whether a user has a Google account connected and optionally the email associated with it. */
 export interface GoogleStatusDto {
+  /** Whether the user has a Google account connected. */
   isConnected: boolean;
+  /** Email address of the connected Google account, if available. */
   email?: string | null;
 }
 
@@ -135,6 +220,31 @@ export interface ProductDto {
   price?: number;
   /** @format int32 */
   quantity?: number;
+}
+
+/**
+ * Data transfer object for updating an existing event.
+ * All fields are optional to allow partial updates.
+ */
+export interface UpdateEventDto {
+  /** The title of the event. */
+  title?: string | null;
+  /** Optional subject or course name. */
+  subject?: string | null;
+  /**
+   * The start date and time in UTC.
+   * @format date-time
+   */
+  start?: string | null;
+  /**
+   * The end date and time in UTC.
+   * @format date-time
+   */
+  end?: string | null;
+  /** Optional location of the event. */
+  location?: string | null;
+  /** The color code in hexadecimal format (e.g., #FF5733). */
+  color?: string | null;
 }
 
 /** Data transfer object for updating an existing product. */
@@ -492,6 +602,107 @@ export class Api<
       }),
 
     /**
+     * No description
+     *
+     * @tags Events
+     * @name EventsList
+     * @summary Gets all events for the authenticated user.
+     * @request GET:/api/Events
+     */
+    eventsList: (
+      query?: {
+        /**
+         * Optional filter for events starting after this date.
+         * @format date-time
+         */
+        start?: string;
+        /**
+         * Optional filter for events ending before this date.
+         * @format date-time
+         */
+        end?: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<EventDto[], ProblemDetails>({
+        path: `/api/Events`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Events
+     * @name EventsCreate
+     * @summary Creates a new event.
+     * @request POST:/api/Events
+     */
+    eventsCreate: (data: CreateEventDto, params: RequestParams = {}) =>
+      this.request<EventDto, ProblemDetails>({
+        path: `/api/Events`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Events
+     * @name EventsDetail
+     * @summary Gets a specific event by ID.
+     * @request GET:/api/Events/{id}
+     */
+    eventsDetail: (id: string, params: RequestParams = {}) =>
+      this.request<EventDto, ProblemDetails>({
+        path: `/api/Events/${id}`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Events
+     * @name EventsUpdate
+     * @summary Updates an existing event.
+     * @request PUT:/api/Events/{id}
+     */
+    eventsUpdate: (
+      id: string,
+      data: UpdateEventDto,
+      params: RequestParams = {},
+    ) =>
+      this.request<void, ProblemDetails>({
+        path: `/api/Events/${id}`,
+        method: "PUT",
+        body: data,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Events
+     * @name EventsDelete
+     * @summary Deletes an event.
+     * @request DELETE:/api/Events/{id}
+     */
+    eventsDelete: (id: string, params: RequestParams = {}) =>
+      this.request<void, ProblemDetails>({
+        path: `/api/Events/${id}`,
+        method: "DELETE",
+        ...params,
+      }),
+
+    /**
  * No description
  *
  * @tags GoogleAuth
@@ -535,13 +746,14 @@ and links the Google account (stores refresh token) to the current authenticated
       }),
 
     /**
-     * No description
-     *
-     * @tags GoogleCalendar
-     * @name CalendarGoogleStatusList
-     * @summary Returns whether the current Blackboard-authenticated user has a Google account linked.
-     * @request GET:/api/calendar/google/status
-     */
+ * No description
+ *
+ * @tags GoogleCalendar
+ * @name CalendarGoogleStatusList
+ * @summary Returns whether the current Blackboard-authenticated user has a valid Google account linked.
+Validates the refresh token by attempting to refresh the access token.
+ * @request GET:/api/calendar/google/status
+ */
     calendarGoogleStatusList: (params: RequestParams = {}) =>
       this.request<GoogleStatusDto, any>({
         path: `/api/calendar/google/status`,
