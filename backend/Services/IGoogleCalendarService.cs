@@ -13,5 +13,12 @@ namespace backend.Services
         /// <param name="username">Local username whose calendar to export to.</param>
         /// <param name="items">Set of items to export.</param>
         Task<ExportSummaryDto> ExportEventsAsync(string username, IEnumerable<CalendarItemDto> items);
+
+        /// <summary>
+        /// Validates the Google refresh token by attempting to refresh the access token.
+        /// Returns true if the token is valid, false if it has expired or is invalid.
+        /// </summary>
+        /// <param name="username">Local username to validate.</param>
+        Task<bool> ValidateTokenAsync(string username);
     }
 } 

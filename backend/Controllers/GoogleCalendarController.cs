@@ -30,7 +30,8 @@ namespace backend.Controllers
         }
 
         /// <summary>
-        /// Returns whether the current Blackboard-authenticated user has a Google account linked.
+        /// Returns whether the current Blackboard-authenticated user has a valid Google account linked.
+        /// Validates the refresh token by attempting to refresh the access token.
         /// </summary>
         /// <param name="sessionCookieHeader">Optional session cookie extracted from the 'X-Session-Cookie' header; falls back to 'Cookie' header.</param>
         [HttpGet("status")]
@@ -49,7 +50,23 @@ namespace backend.Controllers
             var user = await _userRepository.GetByEmailAsync(email);
             if (user == null) return Ok(new GoogleStatusDto { IsConnected = false });
 
-            return Ok(new GoogleStatusDto { IsConnected = user.GoogleAccount != null, Email = user.GoogleAccount?.Email });
+            // If no Google account exists, return not connected
+            if (user.GoogleAccount == null)
+            {
+                return Ok(new GoogleStatusDto { IsConnected = false });
+            }
+
+            // Validate the token by attempting to refresh it
+            var isTokenValid = await _googleCalendarService.ValidateTokenAsync(user.Username);
+
+            if (!isTokenValid)
+            {
+                // Token has expired or is invalid - clear it from the database
+                await _userRepository.RemoveGoogleAccountAsync(user.Username);
+                return Ok(new GoogleStatusDto { IsConnected = false });
+            }
+
+            return Ok(new GoogleStatusDto { IsConnected = true, Email = user.GoogleAccount.Email });
         }
 
         /// <summary>

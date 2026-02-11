@@ -9,15 +9,15 @@ interface Props
     VariantProps<typeof variants> {}
 
 const variants = cva(
-  "relative top-0 z-50 mx-auto flex h-(--header-height) items-center justify-between gap-8 border-b border-transparent px-(--header-px) py-4",
+  "relative z-50 mx-auto flex h-(--header-height) items-center justify-between gap-8 border-b border-transparent px-(--header-px) py-4",
   {
     variants: {
       variant: {
-        default: "bg-background sticky w-full",
+        default: "bg-background w-full",
         floating: [
           "w-[calc(100%-2*var(--gutter,24px))] max-w-(--header-width)",
           "top-2 mt-2 h-[calc(var(--header-height)-var(--spacing)*2)] overflow-hidden rounded-xl",
-          "bg-background border-border sticky border",
+          "bg-background border-border border",
         ],
       },
     },
