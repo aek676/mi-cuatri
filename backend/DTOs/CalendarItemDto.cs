@@ -30,7 +30,7 @@ namespace backend.Dtos
         public required DateTime End { get; init; }
         /// <summary>Gets the physical or virtual location of the event.</summary>
         [JsonPropertyName("location")]
-        public string Location { get; init; } = string.Empty;
+        public string? Location { get; init; }
 
         /// <summary>Gets the event category type mapped from Blackboard 'type' field. Values: Course, GradebookColumn, Institution, OfficeHours, Personal.</summary>
         [Required]
