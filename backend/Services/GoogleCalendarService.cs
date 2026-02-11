@@ -223,6 +223,96 @@ namespace backend.Services
         }
 
         /// <summary>
+        /// Validates the Google refresh token by attempting to refresh the access token.
+        /// Returns true if valid, false if expired. Updates the access token in the database if successful.
+        /// </summary>
+        public async Task<bool> ValidateTokenAsync(string username)
+        {
+            var user = await _userRepository.GetByUsernameAsync(username);
+            if (user?.GoogleAccount == null)
+            {
+                return false;
+            }
+
+            var account = user.GoogleAccount;
+
+            // If we have a valid cached token, no need to refresh
+            if (!string.IsNullOrEmpty(account.AccessToken) &&
+                account.AccessTokenExpiry.HasValue &&
+                account.AccessTokenExpiry.Value > DateTime.UtcNow.AddMinutes(1))
+            {
+                return true;
+            }
+
+            // Need to refresh - check if we have a refresh token
+            if (string.IsNullOrEmpty(account.RefreshToken))
+            {
+                _logger.LogWarning("No refresh token available for user {Username}", username);
+                return false;
+            }
+
+            using var client = new HttpClient();
+            var body = new Dictionary<string, string>
+            {
+                { "client_id", _clientId },
+                { "client_secret", _clientSecret },
+                { "refresh_token", account.RefreshToken },
+                { "grant_type", "refresh_token" }
+            };
+
+            try
+            {
+                var resp = await client.PostAsync(TokenEndpoint, new FormUrlEncodedContent(body));
+                
+                if (resp.IsSuccessStatusCode)
+                {
+                    // Token refreshed successfully - update it
+                    var json = await resp.Content.ReadAsStringAsync();
+                    using var doc = JsonDocument.Parse(json);
+                    var root = doc.RootElement;
+
+                    if (root.TryGetProperty("access_token", out var tokenProp))
+                    {
+                        var newAccessToken = tokenProp.GetString();
+                        var expiresIn = root.TryGetProperty("expires_in", out var exProp) ? exProp.GetInt32() : 3600;
+
+                        account.AccessToken = newAccessToken;
+                        account.AccessTokenExpiry = DateTime.UtcNow.AddSeconds(expiresIn);
+                        await _userRepository.UpsertGoogleAccountAsync(user.Username, account);
+
+                        _logger.LogInformation("Successfully refreshed Google access token during validation for user {Username}", username);
+                        return true;
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Google token refresh response missing access_token for user {Username}", username);
+                        return false;
+                    }
+                }
+                else
+                {
+                    var errorContent = await resp.Content.ReadAsStringAsync();
+                    _logger.LogWarning("Failed to refresh Google token during validation for user {Username}. Status: {Status}, Error: {Error}",
+                        username, resp.StatusCode, errorContent);
+
+                    // Check for expired refresh token
+                    if (resp.StatusCode == System.Net.HttpStatusCode.BadRequest &&
+                        errorContent.Contains("invalid_grant"))
+                    {
+                        _logger.LogWarning("Google refresh token has expired for user {Username}. Token needs to be reconnected.", username);
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception during token validation for user {Username}", username);
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Ensures a valid access token is available for the given user, refreshing if necessary.
         /// Throws <see cref="InvalidOperationException"/> if a refresh fails or no token can be obtained.
         /// </summary>
