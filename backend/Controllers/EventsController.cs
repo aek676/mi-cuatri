@@ -142,16 +142,15 @@ namespace backend.Controllers
         /// Maps an Event model to EventDto.
         /// </summary>
         private static EventDto MapToDto(Event evt) =>
-            new EventDto
-            {
-                Id = evt.Id,
-                Title = evt.Title,
-                Subject = evt.Subject,
-                Start = evt.Start,
-                End = evt.End,
-                Location = evt.Location,
-                Color = evt.Color
-            };
+            new EventDto(
+                evt.Id,
+                evt.Title,
+                evt.Subject,
+                evt.Start,
+                evt.End,
+                evt.Location,
+                evt.Color
+            );
 
         /// <summary>
         /// Gets all events for the authenticated user.

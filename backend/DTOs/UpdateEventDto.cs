@@ -1,39 +1,20 @@
-namespace backend.Dtos
-{
-    /// <summary>
-    /// Data transfer object for updating an existing event.
-    /// All fields are optional to allow partial updates.
-    /// </summary>
-    public class UpdateEventDto
-    {
-        /// <summary>
-        /// The title of the event.
-        /// </summary>
-        public string? Title { get; set; }
+namespace backend.Dtos;
 
-        /// <summary>
-        /// Optional subject or course name.
-        /// </summary>
-        public string? Subject { get; set; }
-
-        /// <summary>
-        /// The start date and time in UTC.
-        /// </summary>
-        public DateTime? Start { get; set; }
-
-        /// <summary>
-        /// The end date and time in UTC.
-        /// </summary>
-        public DateTime? End { get; set; }
-
-        /// <summary>
-        /// Optional location of the event.
-        /// </summary>
-        public string? Location { get; set; }
-
-        /// <summary>
-        /// The color code in hexadecimal format (e.g., #FF5733).
-        /// </summary>
-        public string? Color { get; set; }
-    }
-}
+/// <summary>
+/// Data transfer object for updating an existing event.
+/// All fields are optional to allow partial updates.
+/// </summary>
+/// <param name="Title">The title of the event.</param>
+/// <param name="Subject">Optional subject or course name.</param>
+/// <param name="Start">The start date and time in UTC.</param>
+/// <param name="End">The end date and time in UTC.</param>
+/// <param name="Location">Optional location of the event.</param>
+/// <param name="Color">The color code in hexadecimal format (e.g., #FF5733).</param>
+public record UpdateEventDto(
+    string? Title = null,
+    string? Subject = null,
+    DateTime? Start = null,
+    DateTime? End = null,
+    string? Location = null,
+    string? Color = null
+);

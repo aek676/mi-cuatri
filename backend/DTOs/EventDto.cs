@@ -1,36 +1,23 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace backend.Dtos
-{
-    /// <summary>
-    /// Data transfer object for event responses.
-    /// </summary>
-    public record EventDto
-    {
-        /// <summary>Gets the unique identifier of the event.</summary>
-        [Required]
-        public string Id { get; init; } = string.Empty;
+namespace backend.Dtos;
 
-        /// <summary>Gets the title of the event.</summary>
-        [Required]
-        public string Title { get; init; } = string.Empty;
-
-        /// <summary>Gets the optional subject or course name associated with the event.</summary>
-        public string? Subject { get; init; }
-
-        /// <summary>Gets the start date and time of the event in UTC.</summary>
-        [Required]
-        public DateTime Start { get; init; }
-
-        /// <summary>Gets the end date and time of the event in UTC.</summary>
-        [Required]
-        public DateTime End { get; init; }
-
-        /// <summary>Gets the optional physical or virtual location of the event.</summary>
-        public string? Location { get; init; }
-
-        /// <summary>Gets the hexadecimal color code for the event.</summary>
-        [Required]
-        public string Color { get; init; } = string.Empty;
-    }
-}
+/// <summary>
+/// Data transfer object for event responses.
+/// </summary>
+/// <param name="Id">Gets the unique identifier of the event.</param>
+/// <param name="Title">Gets the title of the event.</param>
+/// <param name="Subject">Gets the optional subject or course name associated with the event.</param>
+/// <param name="Start">Gets the start date and time of the event in UTC.</param>
+/// <param name="End">Gets the end date and time of the event in UTC.</param>
+/// <param name="Location">Gets the optional physical or virtual location of the event.</param>
+/// <param name="Color">Gets the hexadecimal color code for the event.</param>
+public record EventDto(
+    [property: Required] string Id,
+    [property: Required] string Title,
+    string? Subject,
+    [property: Required] DateTime Start,
+    [property: Required] DateTime End,
+    string? Location,
+    [property: Required] string Color
+);
