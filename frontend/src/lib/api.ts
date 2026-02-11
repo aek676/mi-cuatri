@@ -98,17 +98,34 @@ export interface CreateProductDto {
 
 /** Data transfer object for event responses. */
 export interface EventDto {
-  /** @minLength 1 */
+  /**
+   * Gets the unique identifier of the event.
+   * @minLength 1
+   */
   id: string;
-  /** @minLength 1 */
+  /**
+   * Gets the title of the event.
+   * @minLength 1
+   */
   title: string;
+  /** Gets the optional subject or course name associated with the event. */
   subject?: string | null;
-  /** @format date-time */
+  /**
+   * Gets the start date and time of the event in UTC.
+   * @format date-time
+   */
   start: string;
-  /** @format date-time */
+  /**
+   * Gets the end date and time of the event in UTC.
+   * @format date-time
+   */
   end: string;
+  /** Gets the optional physical or virtual location of the event. */
   location?: string | null;
-  /** @minLength 1 */
+  /**
+   * Gets the hexadecimal color code for the event.
+   * @minLength 1
+   */
   color: string;
 }
 
