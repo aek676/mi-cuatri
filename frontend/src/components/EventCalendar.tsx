@@ -3,6 +3,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useGoogleCalendar } from '@/hooks/useGoogleCalendar';
 import { getMonthData } from '@/lib/calendarUtils';
 import type { CalendarEvent } from '@/lib/types';
+import { actions } from 'astro:actions';
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -12,10 +13,12 @@ import {
 } from 'lucide-react';
 import { useEffect, useReducer, useRef, useState } from 'react';
 import { FcGoogle } from 'react-icons/fc';
+import { toast } from 'sonner';
 import AddEventDialog from './calendar/AddEventDialog';
 import EventDialog from './calendar/EventDialog';
 import MobileList from './calendar/MobileList';
 import MonthGrid from './calendar/MonthGrid';
+import { CalendarCategory } from '@/lib/api';
 
 type Props = {
   events?: CalendarEvent[];
@@ -35,7 +38,9 @@ export function EventCalendar({ events = [] }: Props) {
   >([]);
   type EventAction =
     | { type: 'set'; payload: CalendarEvent[] }
-    | { type: 'add'; payload: CalendarEvent };
+    | { type: 'add'; payload: CalendarEvent }
+    | { type: 'confirm'; tempId: string; realEvent: CalendarEvent }
+    | { type: 'remove'; id: string };
 
   const eventsReducer = (state: CalendarEvent[], action: EventAction) => {
     switch (action.type) {
@@ -43,6 +48,12 @@ export function EventCalendar({ events = [] }: Props) {
         return action.payload;
       case 'add':
         return [...state, action.payload];
+      case 'confirm':
+        return state.map((evt) =>
+          evt.calendarid === action.tempId ? action.realEvent : evt
+        );
+      case 'remove':
+        return state.filter((evt) => evt.calendarid !== action.id);
       default:
         return state;
     }
@@ -99,8 +110,53 @@ export function EventCalendar({ events = [] }: Props) {
     }
   };
 
-  const handleAddEvent = (newEvent: CalendarEvent) => {
-    dispatch({ type: 'add', payload: newEvent });
+  const handleAddEvent = async (newEvent: CalendarEvent) => {
+    const optimisticId = `optimistic_${Date.now()}`;
+    const optimisticEvent: CalendarEvent = {
+      ...newEvent,
+      calendarid: optimisticId,
+    };
+
+    dispatch({ type: 'add', payload: optimisticEvent });
+
+    try {
+      const res = await actions.events.create({
+        title: newEvent.title,
+        subject: newEvent.subject,
+        start: newEvent.start,
+        end: newEvent.end,
+        location: newEvent.location,
+        color: newEvent.color || '#315F94',
+        category: newEvent.category as CalendarCategory ?? CalendarCategory.Personal,
+      });
+
+      if (res.error) {
+        throw new Error(
+          (res.error as any)?.message || 'Error creating event'
+        );
+      }
+
+      const realEvent: CalendarEvent = {
+        calendarid: res.data.id,
+        title: res.data.title,
+        subject: res.data.subject,
+        start: res.data.start,
+        end: res.data.end,
+        location: res.data.location,
+        category: res.data.category,
+        color: res.data.color,
+        description: null,
+      };
+
+      // Replace optimistic event with real one
+      dispatch({ type: 'confirm', tempId: optimisticId, realEvent });
+      toast.success('Event created successfully');
+    } catch (err: any) {
+      // Remove optimistic event on error
+      dispatch({ type: 'remove', id: optimisticId });
+      toast.error(`Error creating event: ${err?.message || 'Unknown error'}`);
+      throw err;
+    }
   };
 
   const weekDays = [
