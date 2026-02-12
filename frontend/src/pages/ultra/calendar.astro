@@ -2,25 +2,36 @@
 import EventCalendar from '@/components/EventCalendar';
 import AppLayout from '@/layouts/AppLayout.astro';
 import type { CalendarItemDto } from '@/lib/api';
-import { createApiClient } from '@/lib/apiClient';
 
-const sessionToken = Astro.locals.sessionToken;
-if (!sessionToken) return Astro.redirect('/login');
-
-const api = createApiClient(sessionToken);
+const api = Astro.locals.api!;
 
 let events: CalendarItemDto[] = [];
 
 try {
-  const { data } = await api.api.calendarList({
-    currentDate: new Date().toISOString(),
-  });
+  const [calendarResult, eventsResult] = await Promise.allSettled([
+    api.api.calendarList({
+      currentDate: new Date().toISOString(),
+    }),
+    api.api.eventsList(),
+  ]);
 
-  if (data) {
-    events = data;
-  }
+  const calendarEvents = calendarResult.status === 'fulfilled' ? calendarResult.value.data || [] : [];
+  const personalEvents = eventsResult.status === 'fulfilled' ? eventsResult.value.data || [] : [];
+
+  const transformedPersonalEvents: CalendarItemDto[] = personalEvents.map((event) => ({
+    calendarid: event.id,
+    title: event.title,
+    start: event.start,
+    end: event.end,
+    subject: event.subject || '',
+    location: event.location,
+    color: event.color,
+    category: event.category,
+  }));
+
+  events = [...calendarEvents, ...transformedPersonalEvents];
 } catch (error) {
-  console.error('Error validating session:', error);
+  console.error('Error loading events:', error);
 }
 ---
 
