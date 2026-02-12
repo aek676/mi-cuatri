@@ -3,6 +3,12 @@ import { formatTime } from '@/lib/date';
 import type { CalendarEvent } from '@/lib/types';
 import { Bookmark, Clock, MapPin, X } from 'lucide-react';
 import { memo } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui';
 
 function EventDialog({
   event,
@@ -13,27 +19,32 @@ function EventDialog({
   isOpen: boolean;
   onClose: () => void;
 }) {
-  if (!isOpen || !event) return null;
-
-  const headerColor = event.color || 'var(--color-brand-main)';
+  const headerColor = event?.color || 'var(--color-brand-main)';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200 border border-brand-pale">
-        <div
-          className="px-6 py-4 flex justify-between items-start"
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        showCloseButton={false}
+        className="max-w-md p-0 overflow-hidden border-brand-pale rounded-xl shadow-2xl"
+        style={{
+          backgroundColor: 'white',
+        }}
+      >
+        <DialogHeader
+          className="px-6 py-4 flex flex-row justify-between items-start"
           style={{ backgroundColor: headerColor }}
         >
-          <h3 className="text-xl font-bold text-white pr-4 leading-tight">
-            {event.title}
-          </h3>
+          <DialogTitle className="text-xl font-bold text-white pr-4 leading-tight text-left">
+            {event?.title}
+          </DialogTitle>
           <button
+            type="button"
             onClick={onClose}
             className="text-white/80 hover:text-white transition-colors"
           >
             <X size={24} />
           </button>
-        </div>
+        </DialogHeader>
 
         <div className="p-6 space-y-4">
           <div className="flex items-start gap-3 text-brand-dark">
@@ -42,7 +53,7 @@ function EventDialog({
               <p className="font-semibold text-sm uppercase tracking-wide opacity-70">
                 Subject
               </p>
-              <p className="font-medium">{event.subject}</p>
+              <p className="font-medium">{event?.subject}</p>
             </div>
           </div>
 
@@ -53,18 +64,18 @@ function EventDialog({
                 Time
               </p>
               <p className="font-medium">
-                {new Date(event.start).toLocaleDateString('en-US', {
+                {event && new Date(event.start).toLocaleDateString('en-US', {
                   weekday: 'long',
                   day: 'numeric',
                   month: 'long',
                 })}
                 <br />
-                {formatTime(event.start)} - {formatTime(event.end)}
+                {event && formatTime(event.start)} - {event && formatTime(event.end)}
               </p>
             </div>
           </div>
 
-          {event.location && (
+          {event?.location && (
             <div className="flex items-start gap-3 text-brand-dark">
               <MapPin className="w-5 h-5 mt-0.5 text-brand-light" />
               <div>
@@ -80,16 +91,16 @@ function EventDialog({
             <span
               className="px-3 py-1 rounded-full text-xs font-semibold"
               style={{
-                backgroundColor: hexToRgba(event.color, 0.15),
-                color: event.color || 'var(--color-brand-dark)',
+                backgroundColor: event?.color ? hexToRgba(event.color, 0.15) : undefined,
+                color: event?.color || 'var(--color-brand-dark)',
               }}
             >
-              {event.category}
+              {event?.category}
             </span>
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
