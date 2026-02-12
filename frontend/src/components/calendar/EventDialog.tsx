@@ -47,15 +47,17 @@ function EventDialog({
         </DialogHeader>
 
         <div className="p-6 space-y-4">
-          <div className="flex items-start gap-3 text-brand-dark">
-            <Bookmark className="w-5 h-5 mt-0.5 text-brand-light" />
-            <div>
-              <p className="font-semibold text-sm uppercase tracking-wide opacity-70">
-                Subject
-              </p>
-              <p className="font-medium">{event?.subject}</p>
+          {event?.subject && (
+            <div className="flex items-start gap-3 text-brand-dark">
+              <Bookmark className="w-5 h-5 mt-0.5 text-brand-light" />
+              <div>
+                <p className="font-semibold text-sm uppercase tracking-wide opacity-70">
+                  Subject
+                </p>
+                <p className="font-medium">{event.subject}</p>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="flex items-start gap-3 text-brand-dark">
             <Clock className="w-5 h-5 mt-0.5 text-brand-light" />
@@ -64,11 +66,31 @@ function EventDialog({
                 Time
               </p>
               <p className="font-medium">
-                {event && new Date(event.start).toLocaleDateString('en-US', {
-                  weekday: 'long',
-                  day: 'numeric',
-                  month: 'long',
-                })}
+                {event && (() => {
+                  const startDate = new Date(event.start);
+                  const endDate = new Date(event.end);
+                  const isMultiDay = startDate.toDateString() !== endDate.toDateString();
+                  
+                  if (isMultiDay) {
+                    const startStr = startDate.toLocaleDateString('en-US', {
+                      weekday: 'short',
+                      day: 'numeric',
+                      month: 'short',
+                    });
+                    const endStr = endDate.toLocaleDateString('en-US', {
+                      weekday: 'short',
+                      day: 'numeric',
+                      month: 'short',
+                    });
+                    return `${startStr} - ${endStr}`;
+                  }
+                  
+                  return startDate.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                  });
+                })()}
                 <br />
                 {event && formatTime(event.start)} - {event && formatTime(event.end)}
               </p>
