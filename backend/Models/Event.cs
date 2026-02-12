@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using backend.Enums;
 
 namespace backend.Models
 {
@@ -46,5 +47,11 @@ namespace backend.Models
         /// </summary>
         [Required]
         public string Color { get; set; } = "#000000";
+
+        /// <summary>
+        /// The category of the event.
+        /// </summary>
+        [Required]
+        public CalendarCategory Category { get; set; }
     }
 }

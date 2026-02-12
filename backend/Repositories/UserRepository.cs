@@ -182,7 +182,8 @@ namespace backend.Repositories
                 .Set("Events.$.Start", evt.Start)
                 .Set("Events.$.End", evt.End)
                 .Set("Events.$.Location", evt.Location)
-                .Set("Events.$.Color", evt.Color);
+                .Set("Events.$.Color", evt.Color)
+                .Set("Events.$.Category", evt.Category);
 
             var result = await _context.Users.UpdateOneAsync(filter, update);
             return result.ModifiedCount > 0;
