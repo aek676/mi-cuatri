@@ -85,6 +85,8 @@ export interface CreateEventDto {
    * @minLength 1
    */
   color: string;
+  /** Represents the category types for calendar events from Blackboard. */
+  category: CalendarCategory;
 }
 
 /** Data transfer object for creating a new product. */
@@ -127,6 +129,8 @@ export interface EventDto {
    * @minLength 1
    */
   color: string;
+  /** Represents the category types for calendar events from Blackboard. */
+  category: CalendarCategory;
 }
 
 /**
@@ -245,6 +249,8 @@ export interface UpdateEventDto {
   location?: string | null;
   /** The color code in hexadecimal format (e.g., #FF5733). */
   color?: string | null;
+  /** Represents the category types for calendar events from Blackboard. */
+  category?: CalendarCategory;
 }
 
 /** Data transfer object for updating an existing product. */
