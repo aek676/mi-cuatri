@@ -1,6 +1,7 @@
 using backend.Dtos;
-using backend.Services;
+using backend.Models;
 using backend.Repositories;
+using backend.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers
@@ -22,7 +23,11 @@ namespace backend.Controllers
         /// <param name="googleCalendarService">Service that handles Google Calendar export operations.</param>
         /// <param name="userRepository">Repository to resolve local users.</param>
         /// <param name="blackboardService">Service used to validate Blackboard sessions and fetch calendar items.</param>
-        public GoogleCalendarController(IGoogleCalendarService googleCalendarService, IUserRepository userRepository, IBlackboardService blackboardService)
+        public GoogleCalendarController(
+            IGoogleCalendarService googleCalendarService,
+            IUserRepository userRepository,
+            IBlackboardService blackboardService
+        )
         {
             _googleCalendarService = googleCalendarService;
             _userRepository = userRepository;
@@ -36,19 +41,26 @@ namespace backend.Controllers
         /// <param name="sessionCookieHeader">Optional session cookie extracted from the 'X-Session-Cookie' header; falls back to 'Cookie' header.</param>
         [HttpGet("status")]
         [ProducesResponseType(typeof(GoogleStatusDto), StatusCodes.Status200OK)]
-        public async Task<ActionResult<GoogleStatusDto>> Status([FromHeader(Name = "X-Session-Cookie")] string? sessionCookieHeader)
+        public async Task<ActionResult<GoogleStatusDto>> Status(
+            [FromHeader(Name = "X-Session-Cookie")] string? sessionCookieHeader
+        )
         {
             var cookie = sessionCookieHeader;
-            if (string.IsNullOrEmpty(cookie) && Request.Headers.TryGetValue("Cookie", out var c)) cookie = c.ToString();
-            if (string.IsNullOrEmpty(cookie)) return BadRequest("Session cookie required.");
+            if (string.IsNullOrEmpty(cookie) && Request.Headers.TryGetValue("Cookie", out var c))
+                cookie = c.ToString();
+            if (string.IsNullOrEmpty(cookie))
+                return BadRequest("Session cookie required.");
 
             var bb = await _blackboardService.GetUserDataAsync(cookie);
-            if (!bb.IsSuccess) return BadRequest("Unable to resolve Blackboard user from session cookie.");
+            if (!bb.IsSuccess)
+                return BadRequest("Unable to resolve Blackboard user from session cookie.");
             var email = bb.UserData?.Email;
-            if (string.IsNullOrEmpty(email)) return Ok(new GoogleStatusDto { IsConnected = false });
+            if (string.IsNullOrEmpty(email))
+                return Ok(new GoogleStatusDto { IsConnected = false });
 
             var user = await _userRepository.GetByEmailAsync(email);
-            if (user == null) return Ok(new GoogleStatusDto { IsConnected = false });
+            if (user == null)
+                return Ok(new GoogleStatusDto { IsConnected = false });
 
             // If no Google account exists, return not connected
             if (user.GoogleAccount == null)
@@ -78,25 +90,58 @@ namespace backend.Controllers
         [HttpPost("export")]
         [ProducesResponseType(typeof(ExportSummaryDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<ExportSummaryDto>> Export([FromHeader(Name = "X-Session-Cookie")] string? sessionCookieHeader, [FromQuery] DateTime? from = null)
+        public async Task<ActionResult<ExportSummaryDto>> Export(
+            [FromHeader(Name = "X-Session-Cookie")] string? sessionCookieHeader,
+            [FromQuery] DateTime? from = null
+        )
         {
             var cookie = sessionCookieHeader;
-            if (string.IsNullOrEmpty(cookie) && Request.Headers.TryGetValue("Cookie", out var c)) cookie = c.ToString();
-            if (string.IsNullOrEmpty(cookie)) return BadRequest("Session cookie required.");
+            if (string.IsNullOrEmpty(cookie) && Request.Headers.TryGetValue("Cookie", out var c))
+                cookie = c.ToString();
+            if (string.IsNullOrEmpty(cookie))
+                return BadRequest("Session cookie required.");
 
             var bb = await _blackboardService.GetUserDataAsync(cookie);
-            if (!bb.IsSuccess) return BadRequest("Unable to resolve Blackboard user from session cookie.");
+            if (!bb.IsSuccess)
+                return BadRequest("Unable to resolve Blackboard user from session cookie.");
             var email = bb.UserData?.Email;
-            if (string.IsNullOrEmpty(email)) return BadRequest("Blackboard user has no email to identify local user.");
+            if (string.IsNullOrEmpty(email))
+                return BadRequest("Blackboard user has no email to identify local user.");
 
             var user = await _userRepository.GetByEmailAsync(email);
             if (user == null || user.GoogleAccount == null)
             {
-                return BadRequest(new { message = "User is not connected to Google. Use /api/auth/google/connect to link an account." });
+                return BadRequest(
+                    new
+                    {
+                        message = "User is not connected to Google. Use /api/auth/google/connect to link an account.",
+                    }
+                );
             }
 
             var date = from ?? DateTime.UtcNow;
-            var items = await _blackboardService.GetCalendarItemsAsync(date, cookie);
+
+            var blackboardTask = _blackboardService.GetCalendarItemsAsync(date, cookie);
+            var personalItemsTask = _userRepository
+                .GetUserEventsAsync(user.Username)
+                .ContinueWith(t =>
+                    t.Result.Select(e => new CalendarItemDto
+                    {
+                        CalendarId = $"personal-{e.Id}",
+                        Title = e.Title,
+                        Start = e.Start,
+                        End = e.End,
+                        Location = e.Location,
+                        Category = e.Category,
+                        Subject = e.Subject ?? "",
+                        Color = e.Color,
+                        Description = null,
+                    })
+                );
+
+            await Task.WhenAll(blackboardTask, personalItemsTask);
+
+            var items = blackboardTask.Result.Concat(personalItemsTask.Result);
 
             var summary = await _googleCalendarService.ExportEventsAsync(user.Username, items);
 
