@@ -1,21 +1,36 @@
 using System.ComponentModel.DataAnnotations;
+using backend.Enums;
 
 namespace backend.Dtos;
 
 /// <summary>
 /// Data transfer object for creating a new event.
 /// </summary>
-/// <param name="Title">The title of the event.</param>
-/// <param name="Subject">Optional subject or course name.</param>
-/// <param name="Start">The start date and time in UTC.</param>
-/// <param name="End">The end date and time in UTC.</param>
-/// <param name="Location">Optional location of the event.</param>
-/// <param name="Color">The color code in hexadecimal format (e.g., #FF5733).</param>
-public record CreateEventDto(
-    [property: Required] string Title,
-    string? Subject,
-    [property: Required] DateTime Start,
-    [property: Required] DateTime End,
-    string? Location,
-    [property: Required] string Color = "#000000"
-);
+public record CreateEventDto
+{
+    /// <summary>The title of the event.</summary>
+    [Required]
+    public required string Title { get; init; }
+
+    /// <summary>Optional subject or course name.</summary>
+    public string? Subject { get; init; }
+
+    /// <summary>The start date and time in UTC.</summary>
+    [Required]
+    public DateTime Start { get; init; }
+
+    /// <summary>The end date and time in UTC.</summary>
+    [Required]
+    public DateTime End { get; init; }
+
+    /// <summary>Optional location of the event.</summary>
+    public string? Location { get; init; }
+
+    /// <summary>The color code in hexadecimal format (e.g., #FF5733).</summary>
+    [Required]
+    public required string Color { get; init; }
+
+    /// <summary>The category of the event.</summary>
+    [Required]
+    public required CalendarCategory Category { get; init; }
+}

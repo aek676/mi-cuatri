@@ -10,5 +10,6 @@ declare namespace App {
   interface Locals {
     sessionToken: string | null;
     user?: import('./lib/api').UserDetailDto | null;
+    api?: import('./lib/api').Api<any> | null;
   }
 }

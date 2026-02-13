@@ -177,15 +177,16 @@ namespace backend.Repositories
             );
 
             var update = Builders<User>
-                .Update.Set("Events.$.Title", evt.Title)
-                .Set("Events.$.Subject", evt.Subject)
-                .Set("Events.$.Start", evt.Start)
-                .Set("Events.$.End", evt.End)
-                .Set("Events.$.Location", evt.Location)
-                .Set("Events.$.Color", evt.Color);
+                .Update.Set($"{nameof(User.Events)}.$.{nameof(Event.Title)}", evt.Title)
+                .Set($"{nameof(User.Events)}.$.{nameof(Event.Subject)}", evt.Subject)
+                .Set($"{nameof(User.Events)}.$.{nameof(Event.Start)}", evt.Start)
+                .Set($"{nameof(User.Events)}.$.{nameof(Event.End)}", evt.End)
+                .Set($"{nameof(User.Events)}.$.{nameof(Event.Location)}", evt.Location)
+                .Set($"{nameof(User.Events)}.$.{nameof(Event.Color)}", evt.Color)
+                .Set($"{nameof(User.Events)}.$.{nameof(Event.Category)}", evt.Category);
 
             var result = await _context.Users.UpdateOneAsync(filter, update);
-            return result.ModifiedCount > 0;
+            return result.MatchedCount > 0;
         }
 
         /// <summary>

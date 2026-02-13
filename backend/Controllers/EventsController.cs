@@ -142,15 +142,17 @@ namespace backend.Controllers
         /// Maps an Event model to EventDto.
         /// </summary>
         private static EventDto MapToDto(Event evt) =>
-            new EventDto(
-                evt.Id,
-                evt.Title,
-                evt.Subject,
-                evt.Start,
-                evt.End,
-                evt.Location,
-                evt.Color
-            );
+            new EventDto
+            {
+                Id = evt.Id,
+                Title = evt.Title,
+                Subject = evt.Subject,
+                Start = evt.Start,
+                End = evt.End,
+                Location = evt.Location,
+                Color = evt.Color,
+                Category = evt.Category
+            };
 
         /// <summary>
         /// Gets all events for the authenticated user.
@@ -257,6 +259,7 @@ namespace backend.Controllers
                 End = dto.End.ToUniversalTime(),
                 Location = dto.Location?.Trim(),
                 Color = dto.Color.ToUpperInvariant(),
+                Category = dto.Category,
             };
 
             var createdEvent = await _userRepository.AddEventAsync(validation.Username!, evt);
@@ -274,9 +277,9 @@ namespace backend.Controllers
         /// <param name="id">The event ID.</param>
         /// <param name="dto">The updated event data.</param>
         /// <param name="sessionCookieHeader">Session cookie from X-Session-Cookie header.</param>
-        /// <returns>204 No Content on success.</returns>
+        /// <returns>200 OK with the updated event on success.</returns>
         [HttpPut("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(EventDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -320,6 +323,9 @@ namespace backend.Controllers
             if (dto.Color != null)
                 existingEvent.Color = dto.Color.ToUpperInvariant();
 
+            if (dto.Category.HasValue)
+                existingEvent.Category = dto.Category.Value;
+
             var validationError = ValidateEventData(
                 existingEvent.Title,
                 existingEvent.Start,
@@ -338,9 +344,9 @@ namespace backend.Controllers
             );
             if (!updated)
             {
-                return NotFound(new { error = "Event not found or could not be updated." });
+                return NotFound(new { error = "Event not found." });
             }
-            return NoContent();
+            return Ok(MapToDto(existingEvent));
         }
 
         /// <summary>
