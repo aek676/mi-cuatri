@@ -64,6 +64,7 @@ export function EventCalendar({ events = [] }: Props) {
     null,
   );
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
+  const [eventToEdit, setEventToEdit] = useState<CalendarEvent | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const addButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -111,7 +112,9 @@ export function EventCalendar({ events = [] }: Props) {
   };
 
   const handleEditEvent = (event: CalendarEvent) => {
-    console.log('Edit event:', event);
+    setSelectedEvent(null); // Cierra EventDialog
+    setEventToEdit(event); // Prepara evento para edición
+    setIsAddEventOpen(true); // Abre AddEventDialog
   };
 
   const handleDeleteEvent = (event: CalendarEvent) => {
@@ -340,10 +343,12 @@ export function EventCalendar({ events = [] }: Props) {
         isOpen={isAddEventOpen}
         onClose={() => {
           setIsAddEventOpen(false);
+          setEventToEdit(null);
           addButtonRef.current?.focus();
         }}
         onSave={handleAddEvent}
         defaultDate={currentDate}
+        eventToEdit={eventToEdit}
       />
     </div>
   );

@@ -16,11 +16,13 @@ function AddEventDialog({
   onClose,
   onSave,
   defaultDate,
+  eventToEdit,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onSave: (e: CalendarEvent) => Promise<void>;
   defaultDate?: Date;
+  eventToEdit?: CalendarEvent | null;
 }) {
   const [formData, setFormData] = useState({
     title: '',
@@ -42,32 +44,55 @@ function AddEventDialog({
 
   useEffect(() => {
     if (isOpen) {
-      const baseDate = defaultDate ? new Date(defaultDate) : new Date();
-      const pad = (n: number) => n.toString().padStart(2, '0');
-      const toLocalISO = (d: Date, hourOffset = 0) => {
-        const y = d.getFullYear();
-        const m = pad(d.getMonth() + 1);
-        const day = pad(d.getDate());
-        const h = pad(d.getHours() + hourOffset);
-        const min = pad(d.getMinutes());
-        return `${y}-${m}-${day}T${h}:${min}`;
-      };
+      if (eventToEdit) {
+        // Modo edición: cargar datos del evento existente
+        const pad = (n: number) => n.toString().padStart(2, '0');
+        const toLocalISO = (d: Date) => {
+          const y = d.getFullYear();
+          const m = pad(d.getMonth() + 1);
+          const day = pad(d.getDate());
+          const h = pad(d.getHours());
+          const min = pad(d.getMinutes());
+          return `${y}-${m}-${day}T${h}:${min}`;
+        };
 
-      const startDate = new Date(baseDate);
-      startDate.setHours(new Date().getHours() + 1, 0, 0, 0);
-      const endDate = new Date(startDate);
-      endDate.setHours(startDate.getHours() + 1);
+        setFormData({
+          title: eventToEdit.title,
+          subject: eventToEdit.subject || '',
+          start: toLocalISO(new Date(eventToEdit.start)),
+          end: toLocalISO(new Date(eventToEdit.end)),
+          location: eventToEdit.location || '',
+          color: eventToEdit.color || '#315F94',
+        });
+      } else {
+        // Modo creación: fechas por defecto
+        const baseDate = defaultDate ? new Date(defaultDate) : new Date();
+        const pad = (n: number) => n.toString().padStart(2, '0');
+        const toLocalISO = (d: Date, hourOffset = 0) => {
+          const y = d.getFullYear();
+          const m = pad(d.getMonth() + 1);
+          const day = pad(d.getDate());
+          const h = pad(d.getHours() + hourOffset);
+          const min = pad(d.getMinutes());
+          return `${y}-${m}-${day}T${h}:${min}`;
+        };
 
-      setFormData({
-        title: '',
-        subject: '',
-        start: toLocalISO(startDate),
-        end: toLocalISO(endDate),
-        location: '',
-        color: '#315F94',
-      });
+        const startDate = new Date(baseDate);
+        startDate.setHours(new Date().getHours() + 1, 0, 0, 0);
+        const endDate = new Date(startDate);
+        endDate.setHours(startDate.getHours() + 1);
+
+        setFormData({
+          title: '',
+          subject: '',
+          start: toLocalISO(startDate),
+          end: toLocalISO(endDate),
+          location: '',
+          color: '#315F94',
+        });
+      }
     }
-  }, [isOpen, defaultDate]);
+  }, [isOpen, defaultDate, eventToEdit]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,7 +101,7 @@ function AddEventDialog({
     setIsSubmitting(true);
     try {
       const newEvent: CalendarEvent = {
-        calendarid: `new_${Date.now()}`,
+        calendarid: eventToEdit ? eventToEdit.calendarid : `new_${Date.now()}`,
         ...formData,
         category: 'Personal',
         start: new Date(formData.start).toISOString(),
@@ -106,7 +131,7 @@ function AddEventDialog({
           style={{ backgroundColor: 'var(--color-brand-main)' }}
         >
           <DialogTitle className="text-xl font-bold text-white">
-            Add New Event
+            {eventToEdit ? 'Edit Event' : 'Add New Event'}
           </DialogTitle>
           <button
             type="button"
@@ -253,11 +278,11 @@ function AddEventDialog({
               {isSubmitting ? (
                 <>
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Saving...
+                  {eventToEdit ? 'Updating...' : 'Saving...'}
                 </>
               ) : (
                 <>
-                  <Save size={16} /> Save Event
+                  <Save size={16} /> {eventToEdit ? 'Update Event' : 'Save Event'}
                 </>
               )}
             </Button>
