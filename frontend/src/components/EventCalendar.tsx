@@ -110,6 +110,14 @@ export function EventCalendar({ events = [] }: Props) {
     }
   };
 
+  const handleEditEvent = (event: CalendarEvent) => {
+    console.log('Edit event:', event);
+  };
+
+  const handleDeleteEvent = (event: CalendarEvent) => {
+    console.log('Delete event:', event);
+  };
+
   const handleAddEvent = async (newEvent: CalendarEvent) => {
     const optimisticId = `optimistic_${Date.now()}`;
     const optimisticEvent: CalendarEvent = {
@@ -325,6 +333,8 @@ export function EventCalendar({ events = [] }: Props) {
         event={selectedEvent}
         isOpen={!!selectedEvent}
         onClose={() => setSelectedEvent(null)}
+        onEdit={handleEditEvent}
+        onDelete={handleDeleteEvent}
       />
       <AddEventDialog
         isOpen={isAddEventOpen}
