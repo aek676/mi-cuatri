@@ -277,7 +277,7 @@ namespace backend.Controllers
         /// <param name="id">The event ID.</param>
         /// <param name="dto">The updated event data.</param>
         /// <param name="sessionCookieHeader">Session cookie from X-Session-Cookie header.</param>
-        /// <returns>204 No Content on success.</returns>
+        /// <returns>200 OK with the updated event on success.</returns>
         [HttpPut("{id}")]
         [ProducesResponseType(typeof(EventDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

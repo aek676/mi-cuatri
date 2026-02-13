@@ -173,11 +173,9 @@ export function EventCalendar({ events = [] }: Props) {
         description: null,
       };
 
-      // Replace optimistic event with real one
       dispatch({ type: 'confirm', tempId: optimisticId, realEvent });
       toast.success('Event created successfully');
     } catch (err: any) {
-      // Remove optimistic event on error
       dispatch({ type: 'remove', id: optimisticId });
       toast.error(`Error creating event: ${err?.message || 'Unknown error'}`);
       throw err;
@@ -188,10 +186,11 @@ export function EventCalendar({ events = [] }: Props) {
     const hasChanges =
       updatedEvent.title !== originalEvent?.title ||
       updatedEvent.subject !== originalEvent?.subject ||
-      updatedEvent.start !== originalEvent?.start ||
-      updatedEvent.end !== originalEvent?.end ||
+      new Date(updatedEvent.start).getTime() !== new Date(originalEvent?.start || 0).getTime() ||
+      new Date(updatedEvent.end).getTime() !== new Date(originalEvent?.end || 0).getTime() ||
       updatedEvent.location !== originalEvent?.location ||
-      updatedEvent.color !== originalEvent?.color;
+      updatedEvent.color !== originalEvent?.color ||
+      updatedEvent.category !== originalEvent?.category;
 
     if (!hasChanges) {
       setIsAddEventOpen(false);

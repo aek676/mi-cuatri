@@ -12,7 +12,7 @@ export const events = {
       start: z.string().datetime(),
       end: z.string().datetime(),
       location: z.string().nullable().optional(),
-      color: z.string().min(1),
+      color: z.string().regex(/^#[A-Fa-f0-9]{6}$/),
       category: z.nativeEnum(CalendarCategory),
     }),
     handler: async (input, context): Promise<EventDto> => {
@@ -66,7 +66,7 @@ export const events = {
       start: z.string().datetime().optional(),
       end: z.string().datetime().optional(),
       location: z.string().nullable().optional(),
-      color: z.string().min(1).optional(),
+      color: z.string().regex(/^#[A-Fa-f0-9]{6}$/).optional(),
       category: z.nativeEnum(CalendarCategory).optional(),
     }),
     handler: async (input, context): Promise<EventDto> => {
