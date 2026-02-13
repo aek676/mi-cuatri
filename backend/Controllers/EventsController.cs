@@ -279,7 +279,7 @@ namespace backend.Controllers
         /// <param name="sessionCookieHeader">Session cookie from X-Session-Cookie header.</param>
         /// <returns>204 No Content on success.</returns>
         [HttpPut("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(EventDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -346,7 +346,7 @@ namespace backend.Controllers
             {
                 return NotFound(new { error = "Event not found or could not be updated." });
             }
-            return NoContent();
+            return Ok(MapToDto(existingEvent));
         }
 
         /// <summary>
