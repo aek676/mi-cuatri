@@ -344,7 +344,7 @@ namespace backend.Controllers
             );
             if (!updated)
             {
-                return NotFound(new { error = "Event not found or could not be updated." });
+                return NotFound(new { error = "Event not found." });
             }
             return Ok(MapToDto(existingEvent));
         }

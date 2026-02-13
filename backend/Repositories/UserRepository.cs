@@ -186,7 +186,7 @@ namespace backend.Repositories
                 .Set("Events.$.Category", evt.Category);
 
             var result = await _context.Users.UpdateOneAsync(filter, update);
-            return result.ModifiedCount > 0;
+            return result.MatchedCount > 0;
         }
 
         /// <summary>
