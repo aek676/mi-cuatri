@@ -110,4 +110,39 @@ export const events = {
       }
     },
   }),
+
+  delete: defineAction({
+    accept: 'json',
+    input: z.object({
+      id: z.string().min(1),
+    }),
+    handler: async (input, context): Promise<void> => {
+      try {
+        const cookie = context.cookies.get('bb_session')?.value;
+        if (!cookie) {
+          throw new ActionError({
+            code: 'UNAUTHORIZED',
+            message: 'Session cookie is required',
+          });
+        }
+
+        const api = createApiClient(cookie);
+        const res = await api.api.eventsDelete(input.id);
+
+        if (res.error) {
+          throw new ActionError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: (res.error as any)?.message || 'Error deleting event',
+          });
+        }
+      } catch (err: any) {
+        console.error('[Events.delete Error]:', err);
+        if (err instanceof ActionError) throw err;
+        throw new ActionError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: err?.message || 'Error deleting event',
+        });
+      }
+    },
+  }),
 };

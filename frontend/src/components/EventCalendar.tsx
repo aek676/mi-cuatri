@@ -124,8 +124,15 @@ export function EventCalendar({ events = [] }: Props) {
     setIsAddEventOpen(true);
   };
 
-  const handleDeleteEvent = (event: CalendarEvent) => {
-    console.log('Delete event:', event);
+  const handleDeleteEvent = async (event: CalendarEvent) => {
+    try {
+      await actions.events.delete({ id: event.calendarid });
+      dispatch({ type: 'remove', id: event.calendarid });
+      setSelectedEvent(null);
+      toast.success('Event deleted successfully');
+    } catch (err: any) {
+      toast.error(`Error deleting event: ${err?.message || 'Unknown error'}`);
+    }
   };
 
   const handleAddEvent = async (newEvent: CalendarEvent) => {
