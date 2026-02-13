@@ -15,12 +15,14 @@ function AddEventDialog({
   isOpen,
   onClose,
   onSave,
+  onUpdate,
   defaultDate,
   eventToEdit,
 }: {
   isOpen: boolean;
   onClose: () => void;
   onSave: (e: CalendarEvent) => Promise<void>;
+  onUpdate?: (e: CalendarEvent) => Promise<void>;
   defaultDate?: Date;
   eventToEdit?: CalendarEvent | null;
 }) {
@@ -45,7 +47,6 @@ function AddEventDialog({
   useEffect(() => {
     if (isOpen) {
       if (eventToEdit) {
-        // Modo edición: cargar datos del evento existente
         const pad = (n: number) => n.toString().padStart(2, '0');
         const toLocalISO = (d: Date) => {
           const y = d.getFullYear();
@@ -65,7 +66,6 @@ function AddEventDialog({
           color: eventToEdit.color || '#315F94',
         });
       } else {
-        // Modo creación: fechas por defecto
         const baseDate = defaultDate ? new Date(defaultDate) : new Date();
         const pad = (n: number) => n.toString().padStart(2, '0');
         const toLocalISO = (d: Date, hourOffset = 0) => {
@@ -108,7 +108,12 @@ function AddEventDialog({
         end: new Date(formData.end).toISOString(),
         description: null,
       };
-      await onSave(newEvent);
+      
+      if (eventToEdit && onUpdate) {
+        await onUpdate(newEvent);
+      } else {
+        await onSave(newEvent);
+      }
       onClose();
     } catch {
       // Error is already handled by the parent

@@ -40,7 +40,8 @@ export function EventCalendar({ events = [] }: Props) {
     | { type: 'set'; payload: CalendarEvent[] }
     | { type: 'add'; payload: CalendarEvent }
     | { type: 'confirm'; tempId: string; realEvent: CalendarEvent }
-    | { type: 'remove'; id: string };
+    | { type: 'remove'; id: string }
+    | { type: 'update'; payload: CalendarEvent };
 
   const eventsReducer = (state: CalendarEvent[], action: EventAction) => {
     switch (action.type) {
@@ -54,6 +55,10 @@ export function EventCalendar({ events = [] }: Props) {
         );
       case 'remove':
         return state.filter((evt) => evt.calendarid !== action.id);
+      case 'update':
+        return state.map((evt) =>
+          evt.calendarid === action.payload.calendarid ? action.payload : evt
+        );
       default:
         return state;
     }
@@ -65,6 +70,7 @@ export function EventCalendar({ events = [] }: Props) {
   );
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
   const [eventToEdit, setEventToEdit] = useState<CalendarEvent | null>(null);
+  const [originalEvent, setOriginalEvent] = useState<CalendarEvent | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const addButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -112,9 +118,10 @@ export function EventCalendar({ events = [] }: Props) {
   };
 
   const handleEditEvent = (event: CalendarEvent) => {
-    setSelectedEvent(null); // Cierra EventDialog
-    setEventToEdit(event); // Prepara evento para edición
-    setIsAddEventOpen(true); // Abre AddEventDialog
+    setSelectedEvent(null);
+    setOriginalEvent(event);
+    setEventToEdit(event);
+    setIsAddEventOpen(true);
   };
 
   const handleDeleteEvent = (event: CalendarEvent) => {
@@ -166,6 +173,60 @@ export function EventCalendar({ events = [] }: Props) {
       // Remove optimistic event on error
       dispatch({ type: 'remove', id: optimisticId });
       toast.error(`Error creating event: ${err?.message || 'Unknown error'}`);
+      throw err;
+    }
+  };
+
+  const handleUpdateEvent = async (updatedEvent: CalendarEvent) => {
+    const hasChanges =
+      updatedEvent.title !== originalEvent?.title ||
+      updatedEvent.subject !== originalEvent?.subject ||
+      updatedEvent.start !== originalEvent?.start ||
+      updatedEvent.end !== originalEvent?.end ||
+      updatedEvent.location !== originalEvent?.location ||
+      updatedEvent.color !== originalEvent?.color;
+
+    if (!hasChanges) {
+      setIsAddEventOpen(false);
+      setEventToEdit(null);
+      setOriginalEvent(null);
+      return;
+    }
+
+    try {
+      const res = await actions.events.update({
+        id: updatedEvent.calendarid,
+        title: updatedEvent.title,
+        subject: updatedEvent.subject,
+        start: updatedEvent.start,
+        end: updatedEvent.end,
+        location: updatedEvent.location,
+        color: updatedEvent.color || '#315F94',
+        category: updatedEvent.category as CalendarCategory ?? CalendarCategory.Personal,
+      });
+
+      if (res.error) {
+        throw new Error(
+          (res.error as any)?.message || 'Error updating event'
+        );
+      }
+
+      const updated: CalendarEvent = {
+        calendarid: res.data.id,
+        title: res.data.title,
+        subject: res.data.subject,
+        start: res.data.start,
+        end: res.data.end,
+        location: res.data.location,
+        category: res.data.category,
+        color: res.data.color,
+        description: null,
+      };
+
+      dispatch({ type: 'update', payload: updated });
+      toast.success('Event updated successfully');
+    } catch (err: any) {
+      toast.error(`Error updating event: ${err?.message || 'Unknown error'}`);
       throw err;
     }
   };
@@ -344,9 +405,10 @@ export function EventCalendar({ events = [] }: Props) {
         onClose={() => {
           setIsAddEventOpen(false);
           setEventToEdit(null);
-          addButtonRef.current?.focus();
+          setOriginalEvent(null);
         }}
         onSave={handleAddEvent}
+        onUpdate={handleUpdateEvent}
         defaultDate={currentDate}
         eventToEdit={eventToEdit}
       />

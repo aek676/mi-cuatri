@@ -685,11 +685,12 @@ export class Api<
       data: UpdateEventDto,
       params: RequestParams = {},
     ) =>
-      this.request<void, ProblemDetails>({
+      this.request<EventDto, ProblemDetails>({
         path: `/api/Events/${id}`,
         method: "PUT",
         body: data,
         type: ContentType.Json,
+        format: "json",
         ...params,
       }),
 
