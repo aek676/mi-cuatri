@@ -89,15 +89,6 @@ export interface CreateEventDto {
   category: CalendarCategory;
 }
 
-/** Data transfer object for creating a new product. */
-export interface CreateProductDto {
-  name?: string | null;
-  /** @format double */
-  price?: number;
-  /** @format int32 */
-  quantity?: number;
-}
-
 /** Data transfer object for event responses. */
 export interface EventDto {
   /**
@@ -216,16 +207,6 @@ export interface ProblemDetails {
   [key: string]: any;
 }
 
-/** Data transfer object for product information. */
-export interface ProductDto {
-  id?: string | null;
-  name?: string | null;
-  /** @format double */
-  price?: number;
-  /** @format int32 */
-  quantity?: number;
-}
-
 /**
  * Data transfer object for updating an existing event.
  * All fields are optional to allow partial updates.
@@ -251,15 +232,6 @@ export interface UpdateEventDto {
   color?: string | null;
   /** Represents the category types for calendar events from Blackboard. */
   category?: CalendarCategory;
-}
-
-/** Data transfer object for updating an existing product. */
-export interface UpdateProductDto {
-  name?: string | null;
-  /** @format double */
-  price?: number;
-  /** @format int32 */
-  quantity?: number;
 }
 
 /** Data transfer object containing detailed user information. */
@@ -817,92 +789,6 @@ Accepts token only via X-Session-Cookie header
         method: "GET",
         query: query,
         format: "blob",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Products
-     * @name ProductsList
-     * @summary Retrieves all products.
-     * @request GET:/api/Products
-     */
-    productsList: (params: RequestParams = {}) =>
-      this.request<ProductDto[], any>({
-        path: `/api/Products`,
-        method: "GET",
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Products
-     * @name ProductsCreate
-     * @summary Creates a new product.
-     * @request POST:/api/Products
-     */
-    productsCreate: (data: CreateProductDto, params: RequestParams = {}) =>
-      this.request<ProductDto, any>({
-        path: `/api/Products`,
-        method: "POST",
-        body: data,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Products
-     * @name ProductsDetail
-     * @summary Retrieves a product by its identifier.
-     * @request GET:/api/Products/{id}
-     */
-    productsDetail: (id: string, params: RequestParams = {}) =>
-      this.request<ProductDto, ProblemDetails>({
-        path: `/api/Products/${id}`,
-        method: "GET",
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Products
-     * @name ProductsUpdate
-     * @summary Updates an existing product.
-     * @request PUT:/api/Products/{id}
-     */
-    productsUpdate: (
-      id: string,
-      data: UpdateProductDto,
-      params: RequestParams = {},
-    ) =>
-      this.request<void, any>({
-        path: `/api/Products/${id}`,
-        method: "PUT",
-        body: data,
-        type: ContentType.Json,
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags Products
-     * @name ProductsDelete
-     * @summary Deletes a product by its identifier.
-     * @request DELETE:/api/Products/{id}
-     */
-    productsDelete: (id: string, params: RequestParams = {}) =>
-      this.request<void, any>({
-        path: `/api/Products/${id}`,
-        method: "DELETE",
         ...params,
       }),
   };

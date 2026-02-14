@@ -61,18 +61,15 @@ namespace backend.Controllers
             if (user == null)
                 return Ok(new GoogleStatusDto { IsConnected = false });
 
-            // If no Google account exists, return not connected
             if (user.GoogleAccount == null)
             {
                 return Ok(new GoogleStatusDto { IsConnected = false });
             }
 
-            // Validate the token by attempting to refresh it
             var isTokenValid = await _googleCalendarService.ValidateTokenAsync(user.Username);
 
             if (!isTokenValid)
             {
-                // Token has expired or is invalid - clear it from the database
                 await _userRepository.RemoveGoogleAccountAsync(user.Username);
                 return Ok(new GoogleStatusDto { IsConnected = false });
             }
