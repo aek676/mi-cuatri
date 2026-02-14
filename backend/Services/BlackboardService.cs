@@ -19,6 +19,25 @@ namespace backend.Services
         private const string API_ME_URL = "/learn/api/public/v1/users/me";
         private const string API_CALENDAR_ITEMS_URL = "/learn/api/public/v1/calendars/items";
 
+        private readonly Func<HttpMessageHandler, HttpClient> _httpClientFactory;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlackboardService"/> class.
+        /// </summary>
+        public BlackboardService()
+        {
+            _httpClientFactory = handler => new HttpClient(handler);
+        }
+
+        /// <summary>
+        /// Initializes a new instance for testing with custom HttpClient factory.
+        /// </summary>
+        /// <param name="httpClientFactory">Factory function to create HttpClient with given handler.</param>
+        public BlackboardService(Func<HttpMessageHandler, HttpClient> httpClientFactory)
+        {
+            _httpClientFactory = httpClientFactory;
+        }
+
         /// <summary>
         /// Authenticates a user with Blackboard credentials.
         /// </summary>
@@ -34,7 +53,7 @@ namespace backend.Services
                 SslProtocols = System.Security.Authentication.SslProtocols.Tls12
             };
 
-            using (var client = new HttpClient(handler))
+            using (var client = _httpClientFactory(handler))
             {
                 client.BaseAddress = new Uri(BASE_URL);
 
@@ -122,7 +141,7 @@ namespace backend.Services
                 SslProtocols = System.Security.Authentication.SslProtocols.Tls12
             };
 
-            using (var client = new HttpClient(handler))
+            using (var client = _httpClientFactory(handler))
             {
                 client.BaseAddress = new Uri(BASE_URL);
                 client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
@@ -186,7 +205,7 @@ namespace backend.Services
                 SslProtocols = System.Security.Authentication.SslProtocols.Tls12
             };
 
-            using (var client = new HttpClient(handler))
+            using (var client = _httpClientFactory(handler))
             {
                 client.Timeout = TimeSpan.FromSeconds(30); // Timeout for image downloads
                 client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
@@ -236,7 +255,7 @@ namespace backend.Services
                 SslProtocols = System.Security.Authentication.SslProtocols.Tls12
             };
 
-            using (var client = new HttpClient(handler))
+            using (var client = _httpClientFactory(handler))
             {
                 client.BaseAddress = new Uri(BASE_URL);
                 client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
