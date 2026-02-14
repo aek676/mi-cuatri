@@ -26,6 +26,15 @@ dotnet build             # Build the project
 dotnet publish -c Release    # Build for production
 ```
 
+**Testing:**
+
+```bash
+dotnet test                          # Run all tests
+dotnet test --filter "ClassName"     # Run tests in specific class
+dotnet test --filter "MethodName"    # Run specific test method
+dotnet test --list-tests             # List all discovered tests
+```
+
 ### Docker Commands (root)
 
 ```bash
