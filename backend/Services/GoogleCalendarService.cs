@@ -19,6 +19,7 @@ namespace backend.Services
         private readonly string _clientId;
         private readonly string _clientSecret;
         private const string TokenEndpoint = "https://oauth2.googleapis.com/token";
+        private readonly Func<HttpClient> _httpClientFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="GoogleCalendarService"/> class.
@@ -32,6 +33,23 @@ namespace backend.Services
             _logger = logger;
             _clientId = configuration["Google:ClientId"] ?? Environment.GetEnvironmentVariable("Google__ClientId") ?? string.Empty;
             _clientSecret = configuration["Google:ClientSecret"] ?? Environment.GetEnvironmentVariable("Google__ClientSecret") ?? string.Empty;
+            _httpClientFactory = () => new HttpClient();
+        }
+
+        /// <summary>
+        /// Initializes a new instance for testing with custom HttpClient factory.
+        /// </summary>
+        /// <param name="userRepository">User repository for reading and storing Google account information.</param>
+        /// <param name="configuration">Application configuration to obtain Google OAuth settings.</param>
+        /// <param name="logger">Logger instance for diagnostic logging.</param>
+        /// <param name="httpClientFactory">Factory function to create HttpClient instances.</param>
+        public GoogleCalendarService(IUserRepository userRepository, IConfiguration configuration, ILogger<GoogleCalendarService> logger, Func<HttpClient> httpClientFactory)
+        {
+            _userRepository = userRepository;
+            _logger = logger;
+            _clientId = configuration["Google:ClientId"] ?? Environment.GetEnvironmentVariable("Google__ClientId") ?? string.Empty;
+            _clientSecret = configuration["Google:ClientSecret"] ?? Environment.GetEnvironmentVariable("Google__ClientSecret") ?? string.Empty;
+            _httpClientFactory = httpClientFactory;
         }
 
         /// <summary>
@@ -54,7 +72,7 @@ namespace backend.Services
             string accessToken = await EnsureAccessTokenAsync(user);
 
             // 2. Inicializar el cliente HTTP
-            using var client = new HttpClient();
+            using var client = _httpClientFactory();
             client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
             client.BaseAddress = new Uri("https://www.googleapis.com/");
 
@@ -251,7 +269,7 @@ namespace backend.Services
                 return false;
             }
 
-            using var client = new HttpClient();
+            using var client = _httpClientFactory();
             var body = new Dictionary<string, string>
             {
                 { "client_id", _clientId },
@@ -338,7 +356,7 @@ namespace backend.Services
                 throw new InvalidOperationException($"Refresh token is not available for user {user.Username}. Please reconnect your Google account.");
             }
 
-            using var client = new HttpClient();
+            using var client = _httpClientFactory();
             var body = new Dictionary<string, string>
             {
                 { "client_id", _clientId },

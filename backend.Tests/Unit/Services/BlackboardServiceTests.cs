@@ -707,7 +707,7 @@ public class BlackboardServiceTests
     [Fact]
     public async Task GetCalendarItemsAsync_CalculatesDateRangeCorrectly()
     {
-        var currentDate = new DateTime(2024, 3, 15); // March 15, 2024
+        var currentDate = new DateTime(2024, 3, 15);
         DateTime? capturedSince = null;
         DateTime? capturedUntil = null;
 
