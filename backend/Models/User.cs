@@ -34,5 +34,11 @@ namespace backend.Models
         /// </summary>
         [BsonElement("googleAccount")]
         public GoogleAccount? GoogleAccount { get; set; }
+
+        /// <summary>
+        /// List of calendar events belonging to the user.
+        /// </summary>
+        [BsonElement("events")]
+        public List<Event> Events { get; set; } = new();
     }
 }
