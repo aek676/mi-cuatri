@@ -1,3 +1,4 @@
+import { events } from './events';
 import { google } from './google';
 import { login } from './login';
 import { logout } from './logout';
@@ -5,5 +6,6 @@ import { logout } from './logout';
 export const server = {
   login,
   logout,
-  google
+  google,
+  events
 };

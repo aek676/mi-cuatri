@@ -1,7 +1,7 @@
 export interface CalendarEvent {
   calendarid: string;
   title: string;
-  subject: string;
+  subject?: string | null;
   start: string; // ISO
   end: string; // ISO
   location?: string | null;

@@ -48,6 +48,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
 
     locals.user = response.data.userData;
+    locals.api = api;
 
     if (pathname === '/login') {
       return Response.redirect(new URL('/ultra/calendar', request.url), 302);

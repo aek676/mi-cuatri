@@ -3,6 +3,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useGoogleCalendar } from '@/hooks/useGoogleCalendar';
 import { getMonthData } from '@/lib/calendarUtils';
 import type { CalendarEvent } from '@/lib/types';
+import { actions } from 'astro:actions';
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -12,10 +13,12 @@ import {
 } from 'lucide-react';
 import { useEffect, useReducer, useRef, useState } from 'react';
 import { FcGoogle } from 'react-icons/fc';
+import { toast } from 'sonner';
 import AddEventDialog from './calendar/AddEventDialog';
 import EventDialog from './calendar/EventDialog';
 import MobileList from './calendar/MobileList';
 import MonthGrid from './calendar/MonthGrid';
+import { CalendarCategory } from '@/lib/api';
 
 type Props = {
   events?: CalendarEvent[];
@@ -35,7 +38,10 @@ export function EventCalendar({ events = [] }: Props) {
   >([]);
   type EventAction =
     | { type: 'set'; payload: CalendarEvent[] }
-    | { type: 'add'; payload: CalendarEvent };
+    | { type: 'add'; payload: CalendarEvent }
+    | { type: 'confirm'; tempId: string; realEvent: CalendarEvent }
+    | { type: 'remove'; id: string }
+    | { type: 'update'; payload: CalendarEvent };
 
   const eventsReducer = (state: CalendarEvent[], action: EventAction) => {
     switch (action.type) {
@@ -43,6 +49,16 @@ export function EventCalendar({ events = [] }: Props) {
         return action.payload;
       case 'add':
         return [...state, action.payload];
+      case 'confirm':
+        return state.map((evt) =>
+          evt.calendarid === action.tempId ? action.realEvent : evt
+        );
+      case 'remove':
+        return state.filter((evt) => evt.calendarid !== action.id);
+      case 'update':
+        return state.map((evt) =>
+          evt.calendarid === action.payload.calendarid ? action.payload : evt
+        );
       default:
         return state;
     }
@@ -53,6 +69,8 @@ export function EventCalendar({ events = [] }: Props) {
     null,
   );
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
+  const [eventToEdit, setEventToEdit] = useState<CalendarEvent | null>(null);
+  const [originalEvent, setOriginalEvent] = useState<CalendarEvent | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const addButtonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -99,8 +117,124 @@ export function EventCalendar({ events = [] }: Props) {
     }
   };
 
-  const handleAddEvent = (newEvent: CalendarEvent) => {
-    dispatch({ type: 'add', payload: newEvent });
+  const handleEditEvent = (event: CalendarEvent) => {
+    setSelectedEvent(null);
+    setOriginalEvent(event);
+    setEventToEdit(event);
+    setIsAddEventOpen(true);
+  };
+
+  const handleDeleteEvent = async (event: CalendarEvent) => {
+    try {
+      await actions.events.delete({ id: event.calendarid });
+      dispatch({ type: 'remove', id: event.calendarid });
+      setSelectedEvent(null);
+      toast.success('Event deleted successfully');
+    } catch (err: any) {
+      toast.error(`Error deleting event: ${err?.message || 'Unknown error'}`);
+    }
+  };
+
+  const handleAddEvent = async (newEvent: CalendarEvent) => {
+    const optimisticId = `optimistic_${Date.now()}`;
+    const optimisticEvent: CalendarEvent = {
+      ...newEvent,
+      calendarid: optimisticId,
+    };
+
+    dispatch({ type: 'add', payload: optimisticEvent });
+
+    try {
+      const res = await actions.events.create({
+        title: newEvent.title,
+        subject: newEvent.subject,
+        start: newEvent.start,
+        end: newEvent.end,
+        location: newEvent.location,
+        color: newEvent.color || '#315F94',
+        category: newEvent.category as CalendarCategory ?? CalendarCategory.Personal,
+      });
+
+      if (res.error) {
+        throw new Error(
+          (res.error as any)?.message || 'Error creating event'
+        );
+      }
+
+      const realEvent: CalendarEvent = {
+        calendarid: res.data.id,
+        title: res.data.title,
+        subject: res.data.subject,
+        start: res.data.start,
+        end: res.data.end,
+        location: res.data.location,
+        category: res.data.category,
+        color: res.data.color,
+        description: null,
+      };
+
+      dispatch({ type: 'confirm', tempId: optimisticId, realEvent });
+      toast.success('Event created successfully');
+    } catch (err: any) {
+      dispatch({ type: 'remove', id: optimisticId });
+      toast.error(`Error creating event: ${err?.message || 'Unknown error'}`);
+      throw err;
+    }
+  };
+
+  const handleUpdateEvent = async (updatedEvent: CalendarEvent) => {
+    const hasChanges =
+      updatedEvent.title !== originalEvent?.title ||
+      updatedEvent.subject !== originalEvent?.subject ||
+      new Date(updatedEvent.start).getTime() !== new Date(originalEvent?.start || 0).getTime() ||
+      new Date(updatedEvent.end).getTime() !== new Date(originalEvent?.end || 0).getTime() ||
+      updatedEvent.location !== originalEvent?.location ||
+      updatedEvent.color !== originalEvent?.color ||
+      updatedEvent.category !== originalEvent?.category;
+
+    if (!hasChanges) {
+      setIsAddEventOpen(false);
+      setEventToEdit(null);
+      setOriginalEvent(null);
+      return;
+    }
+
+    try {
+      const res = await actions.events.update({
+        id: updatedEvent.calendarid,
+        title: updatedEvent.title,
+        subject: updatedEvent.subject,
+        start: updatedEvent.start,
+        end: updatedEvent.end,
+        location: updatedEvent.location,
+        color: updatedEvent.color || '#315F94',
+        category: updatedEvent.category as CalendarCategory ?? CalendarCategory.Personal,
+      });
+
+      if (res.error) {
+        throw new Error(
+          (res.error as any)?.message || 'Error updating event'
+        );
+      }
+
+      const updated: CalendarEvent = {
+        calendarid: res.data.id,
+        title: res.data.title,
+        subject: res.data.subject,
+        start: res.data.start,
+        end: res.data.end,
+        location: res.data.location,
+        category: res.data.category,
+        color: res.data.color,
+        description: null,
+      };
+
+      dispatch({ type: 'update', payload: updated });
+      toast.success('Event updated successfully');
+    } catch (err: any) {
+      toast.error(`Error updating event: ${err?.message || 'Unknown error'}`);
+      throw err;
+    }
   };
 
   const weekDays = [
@@ -269,15 +403,20 @@ export function EventCalendar({ events = [] }: Props) {
         event={selectedEvent}
         isOpen={!!selectedEvent}
         onClose={() => setSelectedEvent(null)}
+        onEdit={handleEditEvent}
+        onDelete={handleDeleteEvent}
       />
       <AddEventDialog
         isOpen={isAddEventOpen}
         onClose={() => {
           setIsAddEventOpen(false);
-          addButtonRef.current?.focus();
+          setEventToEdit(null);
+          setOriginalEvent(null);
         }}
         onSave={handleAddEvent}
+        onUpdate={handleUpdateEvent}
         defaultDate={currentDate}
+        eventToEdit={eventToEdit}
       />
     </div>
   );

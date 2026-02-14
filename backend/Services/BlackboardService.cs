@@ -291,7 +291,7 @@ namespace backend.Services
                         Title = obj["title"]?.ToString() ?? string.Empty,
                         Start = start,
                         End = end,
-                        Location = obj["location"]?.ToString() ?? string.Empty,
+                        Location = obj["location"]?.ToString(),
                         Category = ParseCalendarCategory(type),
                         Subject = subject,
                         Color = obj["color"]?.ToString() ?? string.Empty,

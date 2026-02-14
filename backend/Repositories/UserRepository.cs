@@ -1,7 +1,7 @@
-using MongoDB.Driver;
 using backend.Data;
 using backend.Models;
 using backend.Services;
+using MongoDB.Driver;
 
 namespace backend.Repositories
 {
@@ -59,8 +59,12 @@ namespace backend.Repositories
             var user = await _context.Users.Find(filter).FirstOrDefaultAsync();
             if (user?.GoogleAccount != null)
             {
-                user.GoogleAccount.RefreshToken = _protector.Unprotect(user.GoogleAccount.RefreshToken);
-                user.GoogleAccount.AccessToken = _protector.Unprotect(user.GoogleAccount.AccessToken);
+                user.GoogleAccount.RefreshToken = _protector.Unprotect(
+                    user.GoogleAccount.RefreshToken
+                );
+                user.GoogleAccount.AccessToken = _protector.Unprotect(
+                    user.GoogleAccount.AccessToken
+                );
             }
             return user;
         }
@@ -76,8 +80,12 @@ namespace backend.Repositories
             var user = await _context.Users.Find(filter).FirstOrDefaultAsync();
             if (user?.GoogleAccount != null)
             {
-                user.GoogleAccount.RefreshToken = _protector.Unprotect(user.GoogleAccount.RefreshToken);
-                user.GoogleAccount.AccessToken = _protector.Unprotect(user.GoogleAccount.AccessToken);
+                user.GoogleAccount.RefreshToken = _protector.Unprotect(
+                    user.GoogleAccount.RefreshToken
+                );
+                user.GoogleAccount.AccessToken = _protector.Unprotect(
+                    user.GoogleAccount.AccessToken
+                );
             }
             return user;
         }
@@ -99,7 +107,7 @@ namespace backend.Repositories
                     RefreshToken = _protector.Protect(account.RefreshToken),
                     AccessToken = _protector.Protect(account.AccessToken),
                     AccessTokenExpiry = account.AccessTokenExpiry,
-                    Scopes = account.Scopes
+                    Scopes = account.Scopes,
                 };
             }
 
@@ -117,6 +125,79 @@ namespace backend.Repositories
         {
             var filter = Builders<User>.Filter.Eq(u => u.Username, username);
             var update = Builders<User>.Update.Unset(u => u.GoogleAccount);
+            return _context.Users.UpdateOneAsync(filter, update);
+        }
+
+        /// <summary>
+        /// Retrieves all events for a user.
+        /// </summary>
+        /// <param name="username">The username of the user.</param>
+        public async Task<List<Event>> GetUserEventsAsync(string username)
+        {
+            var filter = Builders<User>.Filter.Eq(u => u.Username, username);
+            var user = await _context.Users.Find(filter).FirstOrDefaultAsync();
+            return user?.Events ?? new List<Event>();
+        }
+
+        /// <summary>
+        /// Retrieves a specific event by ID for a user.
+        /// </summary>
+        /// <param name="username">The username of the user.</param>
+        /// <param name="eventId">The ID of the event.</param>
+        public async Task<Event?> GetEventByIdAsync(string username, string eventId)
+        {
+            var filter = Builders<User>.Filter.Eq(u => u.Username, username);
+            var user = await _context.Users.Find(filter).FirstOrDefaultAsync();
+            return user?.Events?.FirstOrDefault(e => e.Id == eventId);
+        }
+
+        /// <summary>
+        /// Adds a new event to a user's events list using $push.
+        /// </summary>
+        /// <param name="username">The username of the user.</param>
+        /// <param name="evt">The event to add.</param>
+        public async Task<Event> AddEventAsync(string username, Event evt)
+        {
+            var filter = Builders<User>.Filter.Eq(u => u.Username, username);
+            var update = Builders<User>.Update.Push(u => u.Events, evt);
+            await _context.Users.UpdateOneAsync(filter, update);
+            return evt;
+        }
+
+        /// <summary>
+        /// Updates an existing event in a user's events list using positional operator.
+        /// </summary>
+        /// <param name="username">The username of the user.</param>
+        /// <param name="evt">The event with updated information.</param>
+        public async Task<bool> UpdateEventAsync(string username, Event evt)
+        {
+            var filter = Builders<User>.Filter.And(
+                Builders<User>.Filter.Eq(u => u.Username, username),
+                Builders<User>.Filter.ElemMatch(u => u.Events, e => e.Id == evt.Id)
+            );
+
+            var update = Builders<User>
+                .Update.Set($"{nameof(User.Events)}.$.{nameof(Event.Title)}", evt.Title)
+                .Set($"{nameof(User.Events)}.$.{nameof(Event.Subject)}", evt.Subject)
+                .Set($"{nameof(User.Events)}.$.{nameof(Event.Start)}", evt.Start)
+                .Set($"{nameof(User.Events)}.$.{nameof(Event.End)}", evt.End)
+                .Set($"{nameof(User.Events)}.$.{nameof(Event.Location)}", evt.Location)
+                .Set($"{nameof(User.Events)}.$.{nameof(Event.Color)}", evt.Color)
+                .Set($"{nameof(User.Events)}.$.{nameof(Event.Category)}", evt.Category);
+
+            var result = await _context.Users.UpdateOneAsync(filter, update);
+            return result.MatchedCount > 0;
+        }
+
+        /// <summary>
+        /// Deletes an event from a user's events list using $pull.
+        /// </summary>
+        /// <param name="username">The username of the user.</param>
+        /// <param name="eventId">The ID of the event to delete.</param>
+        public Task DeleteEventAsync(string username, string eventId)
+        {
+            var filter = Builders<User>.Filter.Eq(u => u.Username, username);
+            var update = Builders<User>.Update.PullFilter(u => u.Events, e => e.Id == eventId);
             return _context.Users.UpdateOneAsync(filter, update);
         }
     }
