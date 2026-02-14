@@ -19,10 +19,6 @@ namespace backend.Data
             _database = client.GetDatabase("MiCuatriDatabase");
         }
         /// <summary>
-        /// Gets the products collection from the MongoDB database.
-        /// </summary>
-        public IMongoCollection<Product> Products => _database.GetCollection<Product>("Products");
-        /// <summary>
         /// Gets the users collection from the MongoDB database.
         /// </summary>
         public IMongoCollection<User> Users => _database.GetCollection<User>("Users");
