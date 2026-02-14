@@ -2,25 +2,27 @@
 
 This is a full-stack application with **Frontend**: Astro 5.16.11 + React + TypeScript + Tailwind CSS v4, **Backend**: .NET 10.0 Web API + MongoDB, **Package Manager**: Bun (frontend), dotnet (backend), **Containerization**: Docker.
 
-## Build Commands
+## Build, Lint & Test Commands
 
 ### Frontend (in `/frontend`)
+
+**Development & Building:**
 
 ```bash
 bun run dev              # Start dev server at localhost:4321
 bun run build            # Build for production
 bun run preview          # Preview production build
-bun run check            # Run Astro type checking
+bun run check            # Check Astro types on all files
 bun run gen:api          # Generate TypeScript API client from Swagger
 ```
 
 ### Backend (in `/backend`)
 
+**Development & Building:**
+
 ```bash
 dotnet run               # Start development server (localhost:5042)
 dotnet build             # Build the project
-dotnet test              # Run all tests
-dotnet test --filter "TestMethodName"  # Run specific test
 dotnet publish -c Release    # Build for production
 ```
 
@@ -30,13 +32,14 @@ dotnet publish -c Release    # Build for production
 docker-compose up       # Start all services (frontend, backend, mongodb)
 docker-compose down     # Stop all services
 docker-compose build    # Rebuild containers
+docker-compose logs -f  # View live logs from all services
 ```
 
 ## Code Style Guidelines
 
 ### TypeScript/React
 
-**Imports**: Use `@/*` path aliases for internal imports:
+**Imports**: Use `@/*` path aliases for internal imports. Separate external and internal imports:
 
 ```typescript
 import { clsx, type ClassValue } from 'clsx';
@@ -57,6 +60,11 @@ export default function Component({ className, children }: ComponentProps) {
   return <div className={cn("default-classes", className)}>{children}</div>
 }
 ```
+
+**Astro-Specific Patterns**:
+
+- Server components run only at build time; use for API calls, database queries, file access
+- Server-rendered HTML hydrated with React client components using `client:load`, `client:idle`, etc.
 
 **Types**: Strict TypeScript with interfaces/types, use records for DTOs, nullable reference types enabled:
 
@@ -81,9 +89,9 @@ export async function getProducts(): Promise<ProductDto[]> {
 }
 ```
 
-**Styling**: Tailwind CSS v4 with shadcn/ui (New York style), utility-first approach, mobile-first breakpoints.
+**Styling**: Tailwind CSS v4 with shadcn/ui (New York style), utility-first approach, mobile-first breakpoints. Use `cn()` from `@/lib/utils` to merge Tailwind classes safely.
 
-### C#
+### C #
 
 **Controllers**: XML documentation for all public APIs, repository pattern with DI, proper HTTP status codes:
 
@@ -100,6 +108,9 @@ public class ProductsController : ControllerBase
         _productRepository = productRepository;
     }
 
+    /// <summary>Gets a product by its ID.</summary>
+    /// <param name="id">The product ID.</param>
+    /// <returns>The product details.</returns>
     [HttpGet("{id}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -118,7 +129,30 @@ public class ProductsController : ControllerBase
 public record ProductDto(string Id, string Name, double Price, int Quantity);
 ```
 
-**Conventions**: PascalCase for classes/interfaces, camelCase for parameters, `I` prefix for interfaces (e.g., `IProductRepository`), async suffix for async methods (e.g., `GetByIdAsync`).
+**Error Handling**: Use try-catch with meaningful error messages, log exceptions, return appropriate HTTP status codes:
+
+```csharp
+try
+{
+    var result = await _productRepository.GetProductByIdAsync(id);
+    if (result == null) return NotFound("Product not found");
+    return Ok(result);
+}
+catch (Exception ex)
+{
+    _logger.LogError(ex, "Error fetching product {ProductId}", id);
+    return StatusCode(500, "An error occurred while processing your request");
+}
+```
+
+**Conventions**:
+
+- PascalCase for classes/interfaces/methods
+- camelCase for parameters and local variables
+- `I` prefix for interfaces (e.g., `IProductRepository`)
+- `Async` suffix for async methods (e.g., `GetByIdAsync`)
+- `_` prefix for private fields (e.g., `_productRepository`)
+- XML comments (`///`) for all public members
 
 ## File Organization
 
@@ -155,9 +189,9 @@ INTERNAL_API_BASE_URL=http://localhost:5042
 
 **API Access**: Swagger docs at `http://localhost:5042/swagger`
 
-## Git Commit Standards
+## Commit Standards
 
-Follow conventional commits from `.github/instructions/commit-messages.intructions.md`:
+Follow conventional commits from `.github/instructions/commit-messages.instructions.md`:
 
 ```
 type(scope): message
@@ -177,10 +211,10 @@ Files modified:
 ## Key Configuration Files
 
 - `/frontend/astro.config.mjs` - Astro configuration
-- `/frontend/tsconfig.json` - TypeScript strict mode
+- `/frontend/tsconfig.json` - TypeScript strict mode with path aliases (`@/*`)
 - `/frontend/components.json` - shadcn/ui configuration
-- `/backend/backend.csproj` - .NET project with XML docs enabled
-- `/docker-compose.yml` - Docker services
+- `/backend/backend.csproj` - .NET project with XML docs enabled, nullable reference types
+- `/docker-compose.yml` - Docker services (backend, frontend, MongoDB, mongo-express)
 
 ## Security Notes
 
