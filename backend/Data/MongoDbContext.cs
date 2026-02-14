@@ -18,6 +18,16 @@ namespace backend.Data
             var client = new MongoClient(configuration.GetConnectionString("MongoDB"));
             _database = client.GetDatabase("MiCuatriDatabase");
         }
+
+        /// <summary>
+        /// Initializes a new instance of the MongoDbContext class for testing.
+        /// </summary>
+        /// <param name="connectionString">The MongoDB connection string.</param>
+        public MongoDbContext(string connectionString)
+        {
+            var client = new MongoClient(connectionString);
+            _database = client.GetDatabase("MiCuatriDatabase");
+        }
         /// <summary>
         /// Gets the users collection from the MongoDB database.
         /// </summary>
