@@ -103,7 +103,6 @@ public class AuthControllerTests
         var response = okResult.Value.Should().BeOfType<LoginResponseDto>().Subject;
         response.IsSuccess.Should().BeTrue();
 
-        // Should still persist username even if GetUserData fails (with null email)
         _mockUserRepository.Verify(
             r => r.UpsertByUsernameAsync(request.Username, null),
             Times.Once
