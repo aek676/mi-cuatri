@@ -29,10 +29,10 @@ dotnet publish -c Release    # Build for production
 **Testing (in `/backend.Tests`):**
 
 ```bash
-cd backend.Tests && dotnet test                      # Run all tests
-cd backend.Tests && dotnet test --filter "ClassName" # Run tests in specific class
-cd backend.Tests && dotnet test --filter "MethodName"# Run specific test method
-cd backend.Tests && dotnet test --list-tests         # List all discovered tests
+cd backend.Tests && dotnet test                       # Run all tests
+cd backend.Tests && dotnet test --filter "ClassName"  # Run tests in specific class
+cd backend.Tests && dotnet test --filter "MethodName" # Run specific test method
+cd backend.Tests && dotnet test --list-tests          # List all discovered tests
 ```
 
 ### Docker Commands (root)
