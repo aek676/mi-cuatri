@@ -26,13 +26,13 @@ dotnet build             # Build the project
 dotnet publish -c Release    # Build for production
 ```
 
-**Testing:**
+**Testing (in `/backend.Tests`):**
 
 ```bash
-dotnet test                          # Run all tests
-dotnet test --filter "ClassName"     # Run tests in specific class
-dotnet test --filter "MethodName"    # Run specific test method
-dotnet test --list-tests             # List all discovered tests
+cd backend.Tests && dotnet test                      # Run all tests
+cd backend.Tests && dotnet test --filter "ClassName" # Run tests in specific class
+cd backend.Tests && dotnet test --filter "MethodName"# Run specific test method
+cd backend.Tests && dotnet test --list-tests         # List all discovered tests
 ```
 
 ### Docker Commands (root)
@@ -163,6 +163,15 @@ catch (Exception ex)
 - `_` prefix for private fields (e.g., `_productRepository`)
 - XML comments (`///`) for all public members
 
+**Testing Conventions** (xUnit + FluentAssertions):
+
+- Use `[Fact]` for single test cases and `[Theory]` for parameterized tests
+- Test method naming: `MethodName_Scenario_ExpectedResult` (e.g., `GetById_WithValidId_ReturnsProduct`)
+- Use FluentAssertions for readable assertions (`.Should().Be()`, `.Should().NotBeNull()`, etc.)
+- Organize tests in `/backend.Tests` with folder structure matching backend source (`Unit/Controllers`, `Unit/Services`, `Unit/Enums`, etc.)
+- Use `#region` to organize test sections (Arrange, Act, Assert or by method)
+- Constructor initialization for test fixtures and System Under Test (SUT)
+
 ## File Organization
 
 ```
@@ -179,6 +188,11 @@ backend/
 ├── Repositories/   # Data access layer
 ├── DTOs/           # Data transfer objects
 └── Enums/          # Enumerations
+
+backend.Tests/
+├── Unit/           # Unit tests (Controllers, Repositories, Services, Enums)
+├── Integration/    # Integration tests
+└── Helpers/        # Test utilities and fixtures
 ```
 
 ## Development Environment
