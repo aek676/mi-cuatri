@@ -21,18 +21,18 @@ bun run gen:api          # Generate TypeScript API client from Swagger
 **Development & Building:**
 
 ```bash
-dotnet run               # Start development server (localhost:5042)
-dotnet build             # Build the project
+dotnet run                   # Start development server (localhost:5042)
+dotnet build                 # Build the project
 dotnet publish -c Release    # Build for production
 ```
 
 **Testing (in `/backend.Tests`):**
 
 ```bash
-cd backend.Tests && dotnet test                       # Run all tests
-cd backend.Tests && dotnet test --filter "ClassName"  # Run tests in specific class
-cd backend.Tests && dotnet test --filter "MethodName" # Run specific test method
-cd backend.Tests && dotnet test --list-tests          # List all discovered tests
+cd backend.Tests && dotnet run                                            # Run all tests
+cd backend.Tests && dotnet run -- -class Namespace.ClassName              # Run tests in specific class
+cd backend.Tests && dotnet test -- -method Namespace.ClassName.MethodName # Run specific test method
+cd backend.Tests && dotnet run -- -list full                              # List all discovered tests
 ```
 
 ### Docker Commands (root)
