@@ -6,6 +6,19 @@
       "url": "https://mcp.docs.astro.build/mcp",
       "enabled": true
     },
+    "playwright": {
+      "type": "local",
+      "command": [
+        "npx",
+        "@playwright/mcp@latest",
+        "--executable-path",
+        "/mnt/c/Program Files/Google/Chrome/Application/chrome.exe",
+        "--extension",
+        "--browser",
+        "chrome"
+      ],
+      "enabled": true
+    },
     "shadcn": {
       "type": "local",
       "command": [
