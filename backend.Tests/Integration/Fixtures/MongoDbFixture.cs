@@ -15,12 +15,12 @@ namespace backend.Tests.Integration.Fixtures;
 public class MongoDbFixture : IAsyncLifetime
 {
     private readonly MongoDbContainer _mongoContainer;
-    
+
     /// <summary>
     /// Gets the MongoDB context for database operations.
     /// </summary>
     public MongoDbContext Context { get; private set; } = null!;
-    
+
     /// <summary>
     /// Gets the UserRepository instance configured with the test container.
     /// </summary>
@@ -31,9 +31,7 @@ public class MongoDbFixture : IAsyncLifetime
     /// </summary>
     public MongoDbFixture()
     {
-        _mongoContainer = new MongoDbBuilder()
-            .WithImage("mongo:7")
-            .Build();
+        _mongoContainer = new MongoDbBuilder().WithImage("mongo:8.2.3").Build();
     }
 
     /// <summary>
@@ -43,13 +41,13 @@ public class MongoDbFixture : IAsyncLifetime
     public async ValueTask InitializeAsync()
     {
         await _mongoContainer.StartAsync();
-        
+
         var connectionString = _mongoContainer.GetConnectionString();
         Context = new MongoDbContext(connectionString);
-        
+
         var dataProtectionProvider = new EphemeralDataProtectionProvider();
         var tokenProtector = new TokenProtector(dataProtectionProvider);
-        
+
         Repository = new UserRepository(Context, tokenProtector);
     }
 
