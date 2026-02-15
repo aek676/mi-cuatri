@@ -14,6 +14,7 @@ bun run build            # Build for production
 bun run preview          # Preview production build
 bun run check            # Check Astro types on all files
 bun run gen:api          # Generate TypeScript API client from Swagger
+bun test                 # Run all tests
 ```
 
 ### Backend (in `/backend`)
@@ -175,12 +176,14 @@ catch (Exception ex)
 ## File Organization
 
 ```
-frontend/src/
-├── components/     # React/Astro components
-├── pages/          # Astro pages
-├── lib/            # Utilities, API clients
-├── layouts/        # Astro layouts
-└── actions/        # Server actions
+frontend/
+├── src/
+│   ├── components/     # React/Astro components
+│   ├── pages/          # Astro pages
+│   ├── lib/            # Utilities, API clients
+│   ├── layouts/        # Astro layouts
+│   └── actions/        # Server actions
+└── tests/              # Unit tests (reducers, types, utilities, etc.)
 
 backend/
 ├── Controllers/    # API controllers
