@@ -1,73 +1,9 @@
 import { describe, expect, test } from 'bun:test';
 import type { CalendarEvent } from '@/lib/types';
-import { CalendarCategory } from '@/lib/api';
-
-// ============================================================================
-// MOCK IMPLEMENTATION OF REDUCER FROM EVENTCALENDAR
-// ============================================================================
-
-/**
- * Reproduzco el reducer del componente EventCalendar para testear su lógica
- */
-type EventAction =
-  | { type: 'set'; payload: CalendarEvent[] }
-  | { type: 'add'; payload: CalendarEvent }
-  | { type: 'confirm'; tempId: string; realEvent: CalendarEvent }
-  | { type: 'remove'; id: string }
-  | { type: 'update'; payload: CalendarEvent };
-
-function eventsReducer(state: CalendarEvent[], action: EventAction): CalendarEvent[] {
-  switch (action.type) {
-    case 'set':
-      return action.payload;
-    case 'add':
-      return [...state, action.payload];
-    case 'confirm':
-      return state.map((evt) =>
-        evt.calendarid === action.tempId ? action.realEvent : evt
-      );
-    case 'remove':
-      return state.filter((evt) => evt.calendarid !== action.id);
-    case 'update':
-      return state.map((evt) =>
-        evt.calendarid === action.payload.calendarid ? action.payload : evt
-      );
-    default:
-      return state;
-  }
-}
-
-// ============================================================================
-// UTILITY FUNCTIONS
-// ============================================================================
-
-function createMockEvent(overrides?: Partial<CalendarEvent>): CalendarEvent {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 0);
-  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 11, 0);
-
-  return {
-    calendarid: `event-${Math.random().toString(36).substr(2, 9)}`,
-    title: 'Test Event',
-    subject: 'Test Subject',
-    start: start.toISOString(),
-    end: end.toISOString(),
-    location: 'Test Location',
-    category: CalendarCategory.Personal,
-    color: '#315F94',
-    description: null,
-    ...overrides,
-  };
-}
-
-// ============================================================================
-// REDUCER TESTS
-// ============================================================================
+import { createMockEvent, createMockEvents } from '../../factories/event.factory';
+import { eventsReducer, EventAction } from '../../factories/event-actions';
 
 describe('EventCalendar Reducer Logic', () => {
-  // ========================================================================
-  // SET ACTION (3 tests)
-  // ========================================================================
   describe('SET Action', () => {
     test("'set' action reemplaza todos los eventos", () => {
       const initialState = [createMockEvent({ calendarid: 'event-1' })];
@@ -116,9 +52,6 @@ describe('EventCalendar Reducer Logic', () => {
     });
   });
 
-  // ========================================================================
-  // ADD ACTION (4 tests)
-  // ========================================================================
   describe('ADD Action', () => {
     test("'add' agrega evento al final del array", () => {
       const initialState = [
@@ -175,9 +108,6 @@ describe('EventCalendar Reducer Logic', () => {
     });
   });
 
-  // ========================================================================
-  // CONFIRM ACTION (4 tests)
-  // ========================================================================
   describe('CONFIRM Action', () => {
     test("'confirm' reemplaza evento temporal por real", () => {
       const tempEvent = createMockEvent({ calendarid: 'optimistic_123' });
@@ -255,9 +185,6 @@ describe('EventCalendar Reducer Logic', () => {
     });
   });
 
-  // ========================================================================
-  // REMOVE ACTION (4 tests)
-  // ========================================================================
   describe('REMOVE Action', () => {
     test("'remove' elimina evento por ID", () => {
       const events = [
@@ -316,9 +243,6 @@ describe('EventCalendar Reducer Logic', () => {
     });
   });
 
-  // ========================================================================
-  // UPDATE ACTION (5 tests)
-  // ========================================================================
   describe('UPDATE Action', () => {
     test("'update' modifica evento existente", () => {
       const original = createMockEvent({ calendarid: 'event-1', title: 'Original Title' });
@@ -418,19 +342,14 @@ describe('EventCalendar Reducer Logic', () => {
     });
   });
 
-  // ========================================================================
-  // COMPLEX SCENARIOS (6 tests)
-  // ========================================================================
   describe('Complex Reducer Scenarios', () => {
     test('secuencia completa: add → confirm → update → remove', () => {
       let state: CalendarEvent[] = [];
 
-      // Add optimista
       const tempEvent = createMockEvent({ calendarid: 'optimistic_1' });
       state = eventsReducer(state, { type: 'add', payload: tempEvent });
       expect(state).toHaveLength(1);
 
-      // Confirm
       const realEvent = createMockEvent({ calendarid: 'event-real' });
       state = eventsReducer(state, {
         type: 'confirm',
@@ -439,12 +358,10 @@ describe('EventCalendar Reducer Logic', () => {
       });
       expect(state[0].calendarid).toBe('event-real');
 
-      // Update
       const updated = createMockEvent({ calendarid: 'event-real', title: 'Updated' });
       state = eventsReducer(state, { type: 'update', payload: updated });
       expect(state[0].title).toBe('Updated');
 
-      // Remove
       state = eventsReducer(state, { type: 'remove', id: 'event-real' });
       expect(state).toHaveLength(0);
     });
@@ -455,19 +372,16 @@ describe('EventCalendar Reducer Logic', () => {
         createMockEvent({ calendarid: 'event-2' }),
       ];
 
-      // Agregar
       state = eventsReducer(state, {
         type: 'add',
         payload: createMockEvent({ calendarid: 'event-3' }),
       });
 
-      // Actualizar el primero
       state = eventsReducer(state, {
         type: 'update',
         payload: createMockEvent({ calendarid: 'event-1', title: 'Updated' }),
       });
 
-      // Remover el segundo
       state = eventsReducer(state, { type: 'remove', id: 'event-2' });
 
       expect(state).toHaveLength(2);
@@ -560,9 +474,6 @@ describe('EventCalendar Reducer Logic', () => {
     });
   });
 
-  // ========================================================================
-  // EDGE CASES (5 tests)
-  // ========================================================================
   describe('Reducer Edge Cases', () => {
     test('maneja estado vacío correctamente', () => {
       const result = eventsReducer([], {
@@ -630,9 +541,6 @@ describe('EventCalendar Reducer Logic', () => {
     });
   });
 
-  // ========================================================================
-  // PERFORMANCE (2 tests)
-  // ========================================================================
   describe('Reducer Performance', () => {
     test('maneja array grande de eventos', () => {
       const largeState = Array.from({ length: 1000 }, (_, i) =>

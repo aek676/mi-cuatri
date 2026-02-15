@@ -1,57 +1,9 @@
-import { describe, expect, test, beforeEach, afterEach } from 'bun:test';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { describe, expect, test } from 'bun:test';
 import type { CalendarEvent } from '@/lib/types';
 import { CalendarCategory } from '@/lib/api';
-
-// ============================================================================
-// TEST UTILITIES & FACTORIES
-// ============================================================================
-
-/**
- * Factory para crear eventos de prueba
- */
-function createMockEvent(overrides?: Partial<CalendarEvent>): CalendarEvent {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 0);
-  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 11, 0);
-
-  return {
-    calendarid: `event-${Math.random().toString(36).substr(2, 9)}`,
-    title: 'Test Event',
-    subject: 'Test Subject',
-    start: start.toISOString(),
-    end: end.toISOString(),
-    location: 'Test Location',
-    category: CalendarCategory.Personal,
-    color: '#315F94',
-    description: null,
-    ...overrides,
-  };
-}
-
-/**
- * Factory para crear múltiples eventos
- */
-function createMockEvents(count: number): CalendarEvent[] {
-  return Array.from({ length: count }, (_, i) =>
-    createMockEvent({
-      calendarid: `event-${i}`,
-      title: `Event ${i + 1}`,
-      start: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), 10 + i, 0).toISOString(),
-      end: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), 11 + i, 0).toISOString(),
-    })
-  );
-}
-
-// ============================================================================
-// TESTS FOR CALENDAREVENT TYPE & UTILITIES
-// ============================================================================
+import { createMockEvent, createMockEvents } from '../../factories/event.factory';
 
 describe('CalendarEvent Type & Factory Functions', () => {
-  // ========================================================================
-  // FACTORY TESTS (6 tests)
-  // ========================================================================
   describe('Event Factory', () => {
     test('createMockEvent() crea evento válido con valores por defecto', () => {
       const event = createMockEvent();
@@ -120,9 +72,6 @@ describe('CalendarEvent Type & Factory Functions', () => {
     });
   });
 
-  // ========================================================================
-  // MULTIPLE EVENTS FACTORY TESTS (4 tests)
-  // ========================================================================
   describe('Multiple Events Factory', () => {
     test('createMockEvents() crea array de eventos', () => {
       const events = createMockEvents(3);
@@ -153,9 +102,6 @@ describe('CalendarEvent Type & Factory Functions', () => {
     });
   });
 
-  // ========================================================================
-  // CALENDAREVENT TYPE VALIDATION (5 tests)
-  // ========================================================================
   describe('CalendarEvent Type Validation', () => {
     test('evento tiene todos los campos requeridos', () => {
       const event = createMockEvent();
@@ -206,16 +152,12 @@ describe('CalendarEvent Type & Factory Functions', () => {
     test('start y end son ISO strings válidos', () => {
       const event = createMockEvent();
 
-      // Verificar que son strings ISO válidos
       const isoRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/;
       expect(isoRegex.test(event.start)).toBe(true);
       expect(isoRegex.test(event.end)).toBe(true);
     });
   });
 
-  // ========================================================================
-  // DATE HANDLING TESTS (6 tests)
-  // ========================================================================
   describe('Date Handling', () => {
     test('evento en mismo día tiene start antes de end', () => {
       const event = createMockEvent();
@@ -292,9 +234,6 @@ describe('CalendarEvent Type & Factory Functions', () => {
     });
   });
 
-  // ========================================================================
-  // CATEGORY & COLOR TESTS (4 tests)
-  // ========================================================================
   describe('Category & Color Handling', () => {
     test('evento soporta todas las categorías', () => {
       const categoriesCount = Object.keys(CalendarCategory).length;
@@ -321,9 +260,6 @@ describe('CalendarEvent Type & Factory Functions', () => {
     });
   });
 
-  // ========================================================================
-  // FILTERING & QUERYING SIMULATION (5 tests)
-  // ========================================================================
   describe('Event Filtering & Querying', () => {
     test('eventos pueden filtrarse por título', () => {
       const events = createMockEvents(5);
@@ -338,7 +274,7 @@ describe('CalendarEvent Type & Factory Functions', () => {
     test('eventos pueden filtrarse por categoría', () => {
       const events = [
         createMockEvent({ category: CalendarCategory.Personal }),
-        createMockEvent({ category: CalendarCategory.Work }),
+        createMockEvent({ category: CalendarCategory.Course }),
         createMockEvent({ category: CalendarCategory.Personal }),
       ];
 
@@ -402,9 +338,6 @@ describe('CalendarEvent Type & Factory Functions', () => {
     });
   });
 
-  // ========================================================================
-  // BATCH OPERATIONS (4 tests)
-  // ========================================================================
   describe('Batch Operations', () => {
     test('múltiples eventos pueden agregarse a array', () => {
       const events: CalendarEvent[] = [];
@@ -455,9 +388,6 @@ describe('CalendarEvent Type & Factory Functions', () => {
     });
   });
 
-  // ========================================================================
-  // DUPLICATE HANDLING (3 tests)
-  // ========================================================================
   describe('Duplicate Event Handling', () => {
     test('evento duplicado tiene calendarid diferente', () => {
       const event1 = createMockEvent({ title: 'Test' });
@@ -495,9 +425,6 @@ describe('CalendarEvent Type & Factory Functions', () => {
     });
   });
 
-  // ========================================================================
-  // EDGE CASES FOR EVENTS (6 tests)
-  // ========================================================================
   describe('Edge Cases for CalendarEvent', () => {
     test('evento con título muy largo', () => {
       const longTitle = 'A'.repeat(500);
@@ -553,9 +480,6 @@ describe('CalendarEvent Type & Factory Functions', () => {
     });
   });
 
-  // ========================================================================
-  // TYPE SAFETY SIMULATION (4 tests)
-  // ========================================================================
   describe('Type Safety Simulation', () => {
     test('evento mantiene tipos correctos después de spread', () => {
       const event = createMockEvent();
@@ -593,7 +517,6 @@ describe('CalendarEvent Type & Factory Functions', () => {
     test('evento cumple interfaz CalendarEvent', () => {
       const event = createMockEvent();
 
-      // Verificar que tiene todos los campos requeridos de la interfaz
       const requiredFields = [
         'calendarid',
         'title',
