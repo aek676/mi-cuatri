@@ -1,0 +1,30 @@
+# Build artifacts
+bin/
+obj/
+
+# Test results
+TestResults/
+*.trx
+
+# Coverage reports
+coverage*.json
+coverage*.xml
+coverage*.info
+*.coverage
+*.coveragexml
+
+# IDE
+.vs/
+.vscode/
+
+# NuGet
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+
+# Misc
+.DS_Store
+Thumbs.db
+*.swp
+*.log

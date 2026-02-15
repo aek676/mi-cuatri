@@ -36,7 +36,7 @@ namespace backend.Controllers
         /// <param name="sessionCookieHeader">Session token from X-Session-Cookie header.</param>
         /// <returns>Image stream (200), 400 (bad request), 401 (unauthorized), or 404 (not found).</returns>
         [HttpGet]
-        [Produces("image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml")]
+        [Produces("image/png", "image/jpeg", "image/gif", "image/webp", "image/svg+xml", "application/json")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(byte[]))]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

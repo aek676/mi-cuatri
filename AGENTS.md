@@ -14,6 +14,7 @@ bun run build            # Build for production
 bun run preview          # Preview production build
 bun run check            # Check Astro types on all files
 bun run gen:api          # Generate TypeScript API client from Swagger
+bun test                 # Run all tests
 ```
 
 ### Backend (in `/backend`)
@@ -21,9 +22,18 @@ bun run gen:api          # Generate TypeScript API client from Swagger
 **Development & Building:**
 
 ```bash
-dotnet run               # Start development server (localhost:5042)
-dotnet build             # Build the project
+dotnet run                   # Start development server (localhost:5042)
+dotnet build                 # Build the project
 dotnet publish -c Release    # Build for production
+```
+
+**Testing (in `/backend.Tests`):**
+
+```bash
+cd backend.Tests && dotnet run                                            # Run all tests
+cd backend.Tests && dotnet run -- -class Namespace.ClassName              # Run tests in specific class
+cd backend.Tests && dotnet test -- -method Namespace.ClassName.MethodName # Run specific test method
+cd backend.Tests && dotnet run -- -list full                              # List all discovered tests
 ```
 
 ### Docker Commands (root)
@@ -154,15 +164,26 @@ catch (Exception ex)
 - `_` prefix for private fields (e.g., `_productRepository`)
 - XML comments (`///`) for all public members
 
+**Testing Conventions** (xUnit + FluentAssertions):
+
+- Use `[Fact]` for single test cases and `[Theory]` for parameterized tests
+- Test method naming: `MethodName_Scenario_ExpectedResult` (e.g., `GetById_WithValidId_ReturnsProduct`)
+- Use FluentAssertions for readable assertions (`.Should().Be()`, `.Should().NotBeNull()`, etc.)
+- Organize tests in `/backend.Tests` with folder structure matching backend source (`Unit/Controllers`, `Unit/Services`, `Unit/Enums`, etc.)
+- Use `#region` to organize test sections (Arrange, Act, Assert or by method)
+- Constructor initialization for test fixtures and System Under Test (SUT)
+
 ## File Organization
 
 ```
-frontend/src/
-├── components/     # React/Astro components
-├── pages/          # Astro pages
-├── lib/            # Utilities, API clients
-├── layouts/        # Astro layouts
-└── actions/        # Server actions
+frontend/
+├── src/
+│   ├── components/     # React/Astro components
+│   ├── pages/          # Astro pages
+│   ├── lib/            # Utilities, API clients
+│   ├── layouts/        # Astro layouts
+│   └── actions/        # Server actions
+└── tests/              # Unit tests (reducers, types, utilities, etc.)
 
 backend/
 ├── Controllers/    # API controllers
@@ -170,6 +191,11 @@ backend/
 ├── Repositories/   # Data access layer
 ├── DTOs/           # Data transfer objects
 └── Enums/          # Enumerations
+
+backend.Tests/
+├── Unit/           # Unit tests (Controllers, Repositories, Services, Enums)
+├── Integration/    # Integration tests
+└── Helpers/        # Test utilities and fixtures
 ```
 
 ## Development Environment
