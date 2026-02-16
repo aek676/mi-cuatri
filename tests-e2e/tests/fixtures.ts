@@ -57,12 +57,13 @@ export async function createEvent(
     location?: string;
     color?: string;
   }
-) {
+): Promise<string> {
   await page.click('button[aria-label="Add event"]');
 
-  await expect(page.locator('[data-state="open"][role="dialog"], [data-slot="dialog-content"][data-state="open"]')).toBeVisible({ timeout: 10000 });
+  await expect(page.locator('[data-state="open"][role="dialog"], [data-slot="dialog-content"][data-state="open"]')).toBeVisible({ timeout: 20000 });
 
-  await page.fill('input[id="ec-title"]', eventData.title);
+  const uniqueTitle = `${eventData.title}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  await page.fill('input[id="ec-title"]', uniqueTitle);
   await page.fill('input[id="ec-start"]', eventData.start);
   await page.fill('input[id="ec-end"]', eventData.end);
 
@@ -76,7 +77,9 @@ export async function createEvent(
 
   await page.click('button:has-text("Save Event")');
 
-  await expect(page.locator('text=Event created successfully').first()).toBeVisible({ timeout: 10000 });
+  await expect(page.locator('text=Event created successfully').first()).toBeVisible({ timeout: 15000 });
+
+  return uniqueTitle;
 }
 
 export function toLocalISO(d: Date): string {

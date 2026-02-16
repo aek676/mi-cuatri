@@ -84,30 +84,30 @@ test.describe('Calendar', () => {
       await navigateToCalendar(page);
 
       const { start, end } = getFutureDate(24);
-      await createEvent(page, {
+      const uniqueTitle = await createEvent(page, {
         title: 'Event for Viewing',
         start,
         end,
       });
 
-      const eventElement = page.getByText('Event for Viewing').first();
+      const eventElement = page.getByText(uniqueTitle).first();
       await eventElement.click();
 
       await expect(page.locator('[data-state="open"][role="dialog"]')).toBeVisible();
-      await expect(page.locator('[data-state="open"][role="dialog"]').getByText('Event for Viewing')).toBeVisible();
+      await expect(page.locator('[data-state="open"][role="dialog"]').getByText(uniqueTitle)).toBeVisible();
     });
 
     test('TC-CAL-005: Edit existing event', async ({ page }) => {
       await navigateToCalendar(page);
 
       const { start, end } = getFutureDate(48);
-      await createEvent(page, {
+      const uniqueTitle = await createEvent(page, {
         title: 'Event to Edit',
         start,
         end,
       });
 
-      await page.getByText('Event to Edit').first().click();
+      await page.getByText(uniqueTitle).first().click();
 
       await expect(page.locator('[data-state="open"][role="dialog"]')).toBeVisible();
     });
@@ -116,13 +116,13 @@ test.describe('Calendar', () => {
       await navigateToCalendar(page);
 
       const { start, end } = getFutureDate(72);
-      await createEvent(page, {
+      const uniqueTitle = await createEvent(page, {
         title: 'Event to Delete',
         start,
         end,
       });
 
-      await page.getByText('Event to Delete').first().click();
+      await page.getByText(uniqueTitle).first().click();
 
       await expect(page.locator('[data-state="open"][role="dialog"]')).toBeVisible();
     });

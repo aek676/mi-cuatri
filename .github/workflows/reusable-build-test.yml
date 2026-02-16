@@ -84,27 +84,34 @@ jobs:
         with: { dotnet-version: "10.0.x" }
       - run: dotnet run
 
-  test-e2e-frontend:
-    needs: [changes, build-frontend]
+  test-e2e:
+    needs: [changes, build-frontend, build-backend]
     if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./frontend
+        working-directory: ./tests-e2e
     steps:
       - uses: actions/checkout@v4
+
       - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.9
-      - name: Install dependecies
+        with: { bun-version: "latest" }
+
+      - name: Install E2E dependencies
         run: bun install --frozen-lockfile
+
       - name: Install Playwright Browsers
         run: bunx playwright install --with-deps
+
       - name: Run Playwright Tests
+        env:
+          E2E_TEST_USERNAME: ${{ secrets.E2E_TEST_USERNAME }}
+          E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
         run: bunx playwright test
+
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
-          path: playwright-report/
+          path: tests-e2e/playwright-report/
           retention-days: 30

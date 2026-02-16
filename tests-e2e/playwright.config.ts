@@ -20,9 +20,15 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'bun run preview',
+    command: 'docker compose up',
     url: 'http://localhost:4321',
     reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
+    timeout: 180 * 1000,
+    stdout: "ignore",
+    stderr: "pipe",
+    gracefulShutdown: {
+      signal: 'SIGTERM',
+      timeout: 10 * 1000,
+    }
   },
 });
