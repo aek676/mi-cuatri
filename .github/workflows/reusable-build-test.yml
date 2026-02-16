@@ -103,6 +103,12 @@ jobs:
       - name: Install Playwright Browsers
         run: bunx playwright install --with-deps
 
+      - name: Create backend .env file
+        working-directory: .
+        run: |
+          cp backend/.env.example backend/.env
+          echo "Created backend/.env from example"
+
       - name: Run Playwright Tests
         env:
           E2E_TEST_USERNAME: ${{ secrets.E2E_TEST_USERNAME }}
