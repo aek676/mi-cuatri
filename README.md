@@ -1,3 +1,3 @@
 # Mi Cuatri
 
-Mi Semestre es una herramienta para estudiantes y profesores que sincroniza el calendario de clases, anuncios y entregas con Google Calendar, centralizando horarios, notificaciones y fechas límite en un único calendario accesible desde cualquier dispositivo.
+La app que tu cuatri en la UAL necesita. Horarios, eventos y sincronización con Google Calendar. Todo en un solo lugar.
