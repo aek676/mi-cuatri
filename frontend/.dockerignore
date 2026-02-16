@@ -37,3 +37,6 @@ coverage
 .next
 .svelte-kit
 .astro
+
+# Tests
+tests

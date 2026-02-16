@@ -4,12 +4,16 @@ using backend.Services;
 using DotNetEnv;
 using System.Text.Json.Serialization;
 
-Env.Load();
+// Load .env file only if it exists (for local development)
+if (File.Exists(".env"))
+{
+    Env.Load();
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
 var connetionString = Environment.GetEnvironmentVariable("ConnectionStrings__MongoDB");
-if (string.IsNullOrEmpty(connetionString))
+if (string.IsNullOrEmpty(connetionString) && !builder.Environment.IsEnvironment("Test"))
 {
     throw new Exception("Connection string not found. Ensure the .env file is correctly configured and placed in the root directory.");
 }
@@ -50,3 +54,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }
