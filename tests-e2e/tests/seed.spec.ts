@@ -1,6 +1,14 @@
 import { test, expect, authenticate, createEvent, getFutureDate, navigateToCalendar, navigateToLogin } from './fixtures';
 
+const TEST_USERNAME = process.env.E2E_TEST_USERNAME;
+const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD;
+const hasCredentials = !!(TEST_USERNAME && TEST_PASSWORD);
+
 test.describe('Seed Tests', () => {
+
+  test.beforeEach(async () => {
+    test.skip(!hasCredentials, 'E2E_TEST_USERNAME and E2E_TEST_PASSWORD environment variables are required');
+  });
 
   test('TC-SEED-001: Establish authenticated session with valid credentials', async ({ page }) => {
     await navigateToLogin(page);
@@ -10,8 +18,8 @@ test.describe('Seed Tests', () => {
     await expect(page.locator('input[name="password"]')).toBeVisible();
     await expect(page.locator('button[type="submit"]')).toBeVisible();
 
-    await page.fill('input[name="username"]', process.env.E2E_TEST_USERNAME || 'testuser');
-    await page.fill('input[name="password"]', process.env.E2E_TEST_PASSWORD || 'testpass');
+    await page.fill('input[name="username"]', TEST_USERNAME!);
+    await page.fill('input[name="password"]', TEST_PASSWORD!);
     await page.click('button[type="submit"]');
 
     await page.waitForURL(/\/ultra\/(calendar|profile)/, { timeout: 15000 });

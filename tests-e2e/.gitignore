@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Environment variables
+.env
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Build artifacts
+dist/
+build/
+
+# Temporary files
+*.tmp
+*.temp

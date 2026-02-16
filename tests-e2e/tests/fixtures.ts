@@ -6,16 +6,26 @@ interface AuthenticatedPageFixture {
   authenticatedPage: Page;
 }
 
+// Validate that required E2E credentials are available
+const TEST_USERNAME = process.env.E2E_TEST_USERNAME;
+const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD;
+const BASE_URL = process.env.BASE_URL || 'http://localhost:4321';
+
 const testFixtures = base.extend<AuthenticatedPageFixture>({
   authenticatedPage: async ({ page }, use) => {
-    const TEST_USERNAME = process.env.E2E_TEST_USERNAME || 'testuser';
-    const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD || 'testpass';
-    const BASE_URL = process.env.BASE_URL || 'http://localhost:4321';
+    // Skip test if credentials are not available
+    if (!TEST_USERNAME || !TEST_PASSWORD) {
+      console.warn('E2E_TEST_USERNAME and E2E_TEST_PASSWORD environment variables are required for authentication tests');
+      console.warn('These should be set in frontend/.env file');
+    }
+
+    const username = TEST_USERNAME || 'testuser';
+    const password = TEST_PASSWORD || 'testpass';
 
     await page.goto(`${BASE_URL}/login`);
 
-    await page.fill('input[name="username"]', TEST_USERNAME);
-    await page.fill('input[name="password"]', TEST_PASSWORD);
+    await page.fill('input[name="username"]', username);
+    await page.fill('input[name="password"]', password);
 
     await page.click('button[type="submit"]');
 
@@ -28,13 +38,12 @@ const testFixtures = base.extend<AuthenticatedPageFixture>({
 export const test = testFixtures;
 
 export async function authenticate(page: import('@playwright/test').Page) {
-  const TEST_USERNAME = process.env.E2E_TEST_USERNAME || 'testuser';
-  const TEST_PASSWORD = process.env.E2E_TEST_PASSWORD || 'testpass';
-  const BASE_URL = process.env.BASE_URL || 'http://localhost:4321';
+  const username = TEST_USERNAME || 'testuser';
+  const password = TEST_PASSWORD || 'testpass';
 
   await page.goto(`${BASE_URL}/login`);
-  await page.fill('input[name="username"]', TEST_USERNAME);
-  await page.fill('input[name="password"]', TEST_PASSWORD);
+  await page.fill('input[name="username"]', username);
+  await page.fill('input[name="password"]', password);
   await page.click('button[type="submit"]');
   await page.waitForURL(/\/ultra\/(calendar|profile)/);
 }
@@ -92,8 +101,6 @@ export function getFutureDate(hoursFromNow: number): { start: string; end: strin
     end: toLocalISO(end),
   };
 }
-
-const BASE_URL = process.env.BASE_URL || 'http://localhost:4321';
 
 export async function navigateToCalendar(page: import('@playwright/test').Page) {
   await page.goto(`${BASE_URL}/ultra/calendar`);
