@@ -45,6 +45,24 @@ docker-compose build    # Rebuild containers
 docker-compose logs -f  # View live logs from all services
 ```
 
+### E2E Testing (in `/tests-e2e`)
+
+**Playwright E2E Tests:**
+
+```bash
+bun install              # Install Playwright dependencies (first time)
+bun run test             # Run all E2E tests
+bun run test:ui          # Run tests with interactive UI mode
+bun run test:debug       # Run tests in debug mode
+```
+
+**Test Files:**
+- `tests/auth.spec.ts` - Authentication tests
+- `tests/calendar.spec.ts` - Calendar functionality tests
+- `tests/profile.spec.ts` - Profile management tests
+- `tests/seed.spec.ts` - Data seeding tests
+- `tests/fixtures.ts` - Shared test fixtures and helpers
+
 ## Code Style Guidelines
 
 ### TypeScript/React
