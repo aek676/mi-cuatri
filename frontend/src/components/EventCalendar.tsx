@@ -262,8 +262,8 @@ export function EventCalendar({ events = [] }: Props) {
       );
 
   return (
-    <div className="flex flex-col h-full flex-1 min-h-0 bg-[#F8FAFC] font-sans">
-      <header className="px-4 md:px-6 py-4 bg-white border-b border-brand-pale shadow-sm flex flex-col md:flex-row justify-between items-center gap-4 z-10 shrink-0">
+    <div className="flex flex-col h-screen bg-[#F8FAFC] font-sans overflow-hidden">
+      <header className="px-4 md:px-6 py-4 bg-white border-b border-brand-pale shadow-sm flex flex-col md:flex-row justify-between items-center gap-4 z-50 shrink-0">
         <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
           <div className="flex items-center gap-3">
             <div className="bg-brand-main p-2 rounded-lg text-white">
@@ -375,29 +375,33 @@ export function EventCalendar({ events = [] }: Props) {
         </div>
       </header>
 
-      <div className="hidden md:grid grid-cols-7 border-b border-brand-pale bg-white shrink-0">
-        {weekDays.map((day) => (
-          <div
-            key={day}
-            className="py-3 text-center text-sm font-semibold text-brand-light uppercase tracking-wider"
-          >
-            {day}
-          </div>
-        ))}
+      <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+        <div className="hidden md:grid grid-cols-7 border-b border-brand-pale bg-white shrink-0">
+          {weekDays.map((day) => (
+            <div
+              key={day}
+              className="py-2 text-center text-sm font-semibold text-brand-light uppercase tracking-wider"
+            >
+              {day}
+            </div>
+          ))}
+        </div>
+
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <MonthGrid
+            calendarDays={calendarDays}
+            getEventsForDay={getEventsForDay}
+            onEventClick={(ev) => setSelectedEvent(ev)}
+          />
+
+          <MobileList
+            calendarDays={calendarDays}
+            getEventsForDay={getEventsForDay}
+            onEventClick={(ev) => setSelectedEvent(ev)}
+            scrollRef={scrollRef}
+          />
+        </div>
       </div>
-
-      <MonthGrid
-        calendarDays={calendarDays}
-        getEventsForDay={getEventsForDay}
-        onEventClick={(ev) => setSelectedEvent(ev)}
-      />
-
-      <MobileList
-        calendarDays={calendarDays}
-        getEventsForDay={getEventsForDay}
-        onEventClick={(ev) => setSelectedEvent(ev)}
-        scrollRef={scrollRef}
-      />
 
       <EventDialog
         event={selectedEvent}

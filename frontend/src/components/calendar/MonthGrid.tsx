@@ -17,7 +17,7 @@ function MonthGrid({
   onEventClick: (ev: CalendarEvent) => void;
 }) {
   return (
-    <div className="hidden md:grid grid-cols-7 flex-1 min-h-0 auto-rows-fr bg-brand-pale gap-px overflow-y-auto">
+    <div className="hidden md:grid grid-cols-7 grid-rows-6 h-full bg-brand-pale gap-px">
       {calendarDays.map((date) => {
         const isToday =
           new Date().getDate() === date.day &&
@@ -28,9 +28,9 @@ function MonthGrid({
         return (
           <div
             key={`${date.year}-${date.month}-${date.day}`}
-            className={`min-h-[100px] bg-white p-2 flex flex-col gap-1 transition-colors hover:bg-slate-50 overflow-hidden ${!date.currentMonth ? 'bg-slate-50/50 text-gray-400' : 'text-brand-dark'}`}
+            className={`bg-white p-2 flex flex-col gap-1 transition-colors hover:bg-slate-50 overflow-hidden ${!date.currentMonth ? 'bg-slate-50/50 text-gray-400' : 'text-brand-dark'}`}
           >
-            <div className="flex justify-between items-start">
+            <div className="flex justify-between items-start shrink-0">
               <span
                 className={`text-sm font-semibold w-7 h-7 flex items-center justify-center rounded-full ${isToday ? 'bg-brand-main text-white' : ''}`}
               >
@@ -45,7 +45,7 @@ function MonthGrid({
               )}
             </div>
 
-            <div className="flex flex-col gap-1.5 mt-1 overflow-y-auto overflow-x-hidden max-h-[120px] custom-scrollbar w-full">
+            <div className="flex flex-col gap-1.5 mt-1 overflow-y-auto overflow-x-hidden custom-scrollbar w-full min-h-0">
               {dayEvents.map((ev) => (
                 <EventItem
                   key={ev.calendarid}
