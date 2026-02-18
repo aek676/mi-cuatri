@@ -21,7 +21,7 @@ function MobileList({
   return (
     <div
       ref={scrollRef}
-      className="md:hidden flex flex-col flex-1 min-h-0 overflow-y-auto bg-slate-50 pb-20"
+      className="md:hidden flex flex-col h-full overflow-y-auto bg-slate-50"
     >
       {calendarDays
         .filter((d) => d.currentMonth)
@@ -57,7 +57,7 @@ function MobileList({
               </div>
 
               {hasEvents && (
-                <div className="px-4 pb-4 pt-1 flex flex-col gap-2 pl-18">
+                <div className="px-4 pb-4 pt-1 flex flex-col gap-2 pl-18 max-h-60 overflow-y-auto">
                   {dayEvents.map((ev) => (
                     <EventItem
                       key={ev.calendarid}
